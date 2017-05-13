@@ -56,7 +56,7 @@ with graph.as_default():
    input=tf.constant(value=x,dtype=tf.float32,name="input")
    filter=tf.constant(value=W,dtype=tf.float32,name="filter")
    bias=tf.constant(value=b,dtype=tf.float32,name="bias")
-   result=tf.nn.conv2d(input=input,filter=filter,strides=[1,2,2,1],padding="VALID",name="conv")+bias
+   result=tf.nn.conv2d(input=input,filter=filter,strides=[1,2,2,1],padding="SAME",name="conv")+bias
 
 with tf.Session(graph=graph) as sess:
     r=sess.run(result)
