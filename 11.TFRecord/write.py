@@ -12,6 +12,11 @@ train_values=train_frame.values
 train_labels_values=train_labels_frame.values
 train_size=train_values.shape[0]
 
+'''
+print(train_values[0].shape)
+print(train_values[0].dtype)
+print(train_labels_values[0])
+'''
 
 
 #------------------create TFRecord file------------------------#
