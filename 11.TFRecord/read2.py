@@ -35,7 +35,7 @@ with session.as_default():
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(sess=session, coord=coord)
 
-    for i in range(10):
+    while True:
         print(session.run(fetches=[features["i"],features["j"]]))
         print("size of queue:",session.run(size))
 
