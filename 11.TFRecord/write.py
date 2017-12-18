@@ -20,6 +20,7 @@ print(train_labels_values[0])
 
 
 #------------------create TFRecord file------------------------#
+
 writer=tf.python_io.TFRecordWriter(path="train.tfrecords")
 for i in range(train_size):
     image_raw=train_values[i].tostring()
