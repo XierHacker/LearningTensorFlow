@@ -7,9 +7,10 @@ import matplotlib.pyplot as plt
 
 TIME_STEPS=10
 BATCH_SIZE=128
+HIDDEN_UNITS1=30
 HIDDEN_UNITS=1
 LEARNING_RATE=0.001
-EPOCH=150
+EPOCH=50
 
 TRAIN_EXAMPLES=11000
 TEST_EXAMPLES=1100
@@ -64,13 +65,16 @@ with graph.as_default():
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,1),name="pred_placeholder")
 
     #lstm instance
+    lstm_cell1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
     lstm_cell=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
 
+    multi_lstm=rnn.MultiRNNCell(cells=[lstm_cell1,lstm_cell])
+
     #initialize to zero
-    init_state=lstm_cell.zero_state(batch_size=BATCH_SIZE,dtype=tf.float32)
+    init_state=multi_lstm.zero_state(batch_size=BATCH_SIZE,dtype=tf.float32)
 
     #dynamic rnn
-    outputs,states=tf.nn.dynamic_rnn(cell=lstm_cell,inputs=X_p,initial_state=init_state,dtype=tf.float32)
+    outputs,states=tf.nn.dynamic_rnn(cell=multi_lstm,inputs=X_p,initial_state=init_state,dtype=tf.float32)
     #print(outputs.shape)
     h=outputs[:,-1,:]
     #print(h.shape)
@@ -118,16 +122,3 @@ with tf.Session(graph=graph) as sess:
         print("average test loss:", sum(test_losses) / len(test_losses))
         plt.plot(range(1000),results[:1000,0])
     plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
