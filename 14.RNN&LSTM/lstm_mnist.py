@@ -67,8 +67,11 @@ with graph.as_default():
     #---------------------------------define loss and optimizer----------------------------------#
     cross_loss=tf.losses.softmax_cross_entropy(onehot_labels=y_p,logits=h)
     #print(loss.shape)
-    optimizer=tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss=cross_loss)
 
+    correct_prediction = tf.equal(tf.argmax(h, 1), tf.argmax(y_p, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+    optimizer=tf.train.AdamOptimizer(LEARNING_RATE).minimize(loss=cross_loss)
 
     init=tf.global_variables_initializer()
 
@@ -79,33 +82,20 @@ with tf.Session(graph=graph) as sess:
     for epoch in range(1,EPOCH+1):
         #results = np.zeros(shape=(TEST_EXAMPLES, 10))
         train_losses=[]
+        accus=[]
         #test_losses=[]
         print("epoch:",epoch)
         for j in range(TRAIN_EXAMPLES//BATCH_SIZE):
-            _,train_loss=sess.run(
-                    fetches=(optimizer,cross_loss),
+            _,train_loss,accu=sess.run(
+                    fetches=(optimizer,cross_loss,accuracy),
                     feed_dict={
                             X_p:X_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
                             y_p:y_train[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
                         }
             )
             train_losses.append(train_loss)
+            accus.append(accu)
         print("average training loss:", sum(train_losses) / len(train_losses))
+        print("accuracy:",sum(accus)/len(accus))
 
-
-'''
-        for j in range(TEST_EXAMPLES//BATCH_SIZE):
-            result,test_loss=sess.run(
-                    fetches=(h,mse),
-                    feed_dict={
-                            X_p:X_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE],
-                            y_p:y_test[j*BATCH_SIZE:(j+1)*BATCH_SIZE]
-                        }
-            )
-            results[j*BATCH_SIZE:(j+1)*BATCH_SIZE]=result
-            test_losses.append(test_loss)
-        print("average test loss:", sum(test_losses) / len(test_losses))
-        plt.plot(range(1000),results[:1000,0])
-    plt.show()
-'''
 
