@@ -17,7 +17,7 @@
 
 ### [TensorFlow学习（八）：tensorborad可视化](http://blog.csdn.net/xierhacker/article/details/53697515)
 
-###[TensorFlow学习（九）：卷积网络CNN](http://blog.csdn.net/xierhacker/article/details/53174594)
+### [TensorFlow学习（九）：卷积网络CNN](http://blog.csdn.net/xierhacker/article/details/53174594)
 
 ### [TensorFlow学习（十）：图像预处理](http://blog.csdn.net/xierhacker/article/details/72385422)
 
