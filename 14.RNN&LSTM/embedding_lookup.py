@@ -9,15 +9,15 @@ with graph.as_default():
     print("embeddings.shape",embeddings.shape)
 
     #一维ids
-    ids1=tf.Variable(initial_value=[1,2],name="ids")
+    ids1 = tf.Variable(initial_value=[1, 2], name="ids")
     vecs1 = tf.nn.embedding_lookup(params=embeddings, ids=ids1)
 
     #二维ids,可以做为批处理来用
-    ids2=tf.Variable(initial_value=[[1,2],[2,1],[0,2]])
-    print("ids2.shape:",ids2.shape)
-    vecs2=tf.nn.embedding_lookup(params=embeddings,ids=ids2)
+    ids2 = tf.Variable(initial_value=[[1, 2], [2, 1], [0, 2]])
+    print("ids2.shape:", ids2.shape)
+    vecs2 = tf.nn.embedding_lookup(params=embeddings, ids=ids2)
 
-    init_op=tf.global_variables_initializer()
+    init_op = tf.global_variables_initializer()
     init_op = tf.global_variables_initializer()
 
 with tf.Session(graph=graph) as sess:
