@@ -38,6 +38,7 @@ X_test=np.reshape(X_test,newshape=(-1,28,28))
 
 #-----------------------------------------------------------------------------------------------------#
 
+
 #--------------------------------------Define Graph---------------------------------------------------#
 graph=tf.Graph()
 with graph.as_default():
@@ -48,36 +49,30 @@ with graph.as_default():
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,10),name="pred_placeholder")
 
     #lstm instance
-    #lstm_cell1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    lstm_cell=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
+    lstm_forward_1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_forward_2=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
+    lstm_forward=rnn.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
 
-    #multi_lstm=rnn.MultiRNNCell(cells=[lstm_cell1,lstm_cell])
+    lstm_backward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
+    lstm_backward=rnn.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
 
-    #initialize to zero
-    init_state=lstm_cell.zero_state(batch_size=BATCH_SIZE,dtype=tf.float32)
 
     '''
-    #dynamic rnn
-    outputs,states=tf.nn.dynamic_rnn(cell=multi_lstm,inputs=X_p,initial_state=init_state,dtype=tf.float32)
-    #print(outputs.shape)
-    h=outputs[:,-1,:]
-    #print(h.shape)
+    outputs,states=tf.nn.bidirectional_dynamic_rnn(
+        cell_fw=lstm_forward,
+        cell_bw=lstm_backward,
+        inputs=X_p,
+        dtype=tf.float32
+    )
+
+    outputs_fw=outputs[0]
+    outputs_bw = outputs[1]
+    h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
     '''
 
-    outputs=[]
-    state=init_state
-    with tf.variable_scope("RNN"):
-        for time_step in range(TIME_STEPS):
-            if time_step>0:
-                tf.get_variable_scope().reuse_variables()
-            #shape of output is [batch_size,units_size],input:[batch_size,input_size]
-            output,state=lstm_cell(inputs=X_p[:,time_step,:],state=state)
-            #print(output.shape)
-            outputs.append(output)
-        #print(len(outputs))
-    h=outputs[-1]
-    #print(h.shape)
-    #--------------------------------------------------------------------------------------------#
+   # print(h.shape)
+    #---------------------------------------;-----------------------------------------------------#
 
     #---------------------------------define loss and optimizer----------------------------------#
     cross_loss=tf.losses.softmax_cross_entropy(onehot_labels=y_p,logits=h)
@@ -112,5 +107,3 @@ with tf.Session(graph=graph) as sess:
             accus.append(accu)
         print("average training loss:", sum(train_losses) / len(train_losses))
         print("accuracy:",sum(accus)/len(accus))
-
-
