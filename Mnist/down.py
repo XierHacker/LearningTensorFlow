@@ -12,3 +12,4 @@ batch = mnist.train.next_batch(10)
 
 print(batch[0].shape)
 print(batch[1].shape)
+print()
