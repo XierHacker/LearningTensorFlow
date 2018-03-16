@@ -1,27 +1,24 @@
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
-#define graph
-w=tf.Variable(initial_value=[[1,2],[3,4]],dtype=tf.float32,name="w")
-x=tf.Variable(initial_value=[[1,0],[0,1]],dtype=tf.float32,name="x")
+with tf.variable_scope("space1",reuse=False):
+    v1=tf.get_variable(name="V1",shape=(2,2),dtype=tf.float32,initializer=tf.initializers.ones())
+    print("name of v1:",v1.name)
 
-#like Tensor
-y=tf.matmul(w,x,name="y")
+    v2 = tf.get_variable(name="V2", shape=(2, 2), dtype=tf.float32, initializer=tf.initializers.zeros())
+    print("name of v2:", v2.name)
 
-a=tf.placeholder(dtype=tf.float32,shape=(2,2),name="a")
+with tf.variable_scope("space2",reuse=False):
+    v3=tf.get_variable(name="V1",shape=(2,2),dtype=tf.float32,initializer=tf.initializers.ones())
+    print("name of v3:",v3.name)
 
-print(y)
+init=tf.global_variables_initializer()
 
-init_op=tf.global_variables_initializer()
-
-#define session
-sess=tf.Session()
-#run init_op first
-sess.run(fetches=init_op)
-
-print(sess.run(fetches=w))
-print(sess.run(fetches=x))
-print(sess.run(fetches=y))
+with tf.Session() as sess:
+    sess.run(init)
+    print(sess.run(v1))
+    print(sess.run(v2))
+    print(sess.run(v3))
 
 
 

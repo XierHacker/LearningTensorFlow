@@ -48,27 +48,25 @@ with graph.as_default():
     X_p=tf.placeholder(dtype=tf.float32,shape=(None,TIME_STEPS,28),name="input_placeholder")
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,10),name="pred_placeholder")
 
-    #lstm instance
-    lstm_forward_1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    #加attention(这里的attention和encoder-decoder架构的attention稍有不同)
-    lstm_forward_1=rnn.AttentionCellWrapper(cell=lstm_forward_1,attn_length=5)
+    #gru instance
+    gru_forward_1=rnn.GRUCell(num_units=HIDDEN_UNITS1)
+    gru_forward_2=rnn.GRUCell(num_units=HIDDEN_UNITS)
+    gru_forward=rnn.MultiRNNCell(cells=[gru_forward_1,gru_forward_2])
+    #lstm_forward_1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
+    #lstm_forward_2=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
+    #lstm_forward=rnn.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
 
-    lstm_forward_2=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
-    # 加attention
-    lstm_forward_2 = rnn.AttentionCellWrapper(cell=lstm_forward_2, attn_length=5)
-    lstm_forward=rnn.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
+    gru_backward_1=rnn.GRUCell(num_units=HIDDEN_UNITS1)
+    gru_backward_2=rnn.GRUCell(num_units=HIDDEN_UNITS)
+    gru_backward=rnn.MultiRNNCell(cells=[gru_backward_1,gru_backward_2])
 
-    lstm_backward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    #加attention
-    lstm_backward_1 = rnn.AttentionCellWrapper(cell=lstm_backward_1, attn_length=5)
-
-    lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
-    lstm_backward_2 = rnn.AttentionCellWrapper(cell=lstm_backward_2, attn_length=5)
-    lstm_backward=rnn.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
+    #lstm_backward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
+    #lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
+    #lstm_backward=rnn.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
 
     outputs,states=tf.nn.bidirectional_dynamic_rnn(
-        cell_fw=lstm_forward,
-        cell_bw=lstm_backward,
+        cell_fw=gru_forward,
+        cell_bw=gru_backward,
         inputs=X_p,
         dtype=tf.float32
     )
@@ -77,7 +75,7 @@ with graph.as_default():
     outputs_bw = outputs[1]
     h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
    # print(h.shape)
-    #--------------------------------------------------------------------------------------------#
+    #---------------------------------------;-----------------------------------------------------#
 
     #---------------------------------define loss and optimizer----------------------------------#
     cross_loss=tf.losses.softmax_cross_entropy(onehot_labels=y_p,logits=h)
