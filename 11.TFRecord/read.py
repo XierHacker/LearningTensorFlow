@@ -5,13 +5,12 @@ graph=tf.Graph()
 session=tf.Session(graph=graph)
 
 with graph.as_default():
-    files=tf.train.match_filenames_once(pattern="train.tfrecords").initialized_value()
+    #files=tf.train.match_filenames_once(pattern="train.tfrecords").initialized_value()
     #print("files:",files)
-    filename_queue=tf.train.string_input_producer(string_tensor=files,shuffle=False)
+    #filename_queue=tf.train.string_input_producer(string_tensor=files,shuffle=False)
 
     reader=tf.TFRecordReader()
     _,serialized_example=reader.read(queue=filename_queue)
-
     features=tf.parse_single_example(
             serialized=serialized_example,
             features={
@@ -41,7 +40,6 @@ with session.as_default():
     print(image_run.shape)
     print(image_run)
     print(label_run)
-
 
     coord.request_stop()
     coord.join(threads)

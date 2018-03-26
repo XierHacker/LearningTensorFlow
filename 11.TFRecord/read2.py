@@ -20,9 +20,6 @@ with graph.as_default():
                 }
         )
 
-
-
-
     init_op=tf.global_variables_initializer()
 
 
@@ -41,5 +38,3 @@ with session.as_default():
 
     coord.request_stop()
     coord.join(threads)
-
-
