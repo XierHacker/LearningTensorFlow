@@ -26,3 +26,7 @@
 ### [TensorFlow学习（十二）：模型的保存与恢复](http://blog.csdn.net/xierhacker/article/details/58637829)
 
 ### [TensorFlow学习（十三）：构造LSTM最简明教程](http://blog.csdn.net/xierhacker/article/details/78772560)
+
+### [TensorFlow学习（十四）：条件随机场CRF](https://blog.csdn.net/xierhacker/article/details/78923758)
+
+### [TensorFlow学习（十五）：使用tf.data来创建输入流(上)](https://blog.csdn.net/xierhacker/article/details/79002902)
