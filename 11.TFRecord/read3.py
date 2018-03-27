@@ -3,7 +3,6 @@ import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-
 #tfrecord 文件列表
 file_list=["train.tfrecords"]
 
@@ -15,7 +14,7 @@ def _parse_data(example_proto):
     parsed_features=tf.parse_single_example(
         serialized=example_proto,
         features={
-            "image_raw":tf.FixedLenFeature(shape=(),dtype=tf.string),
+            "image_raw":tf.FixedLenFeature(shape=(784,),dtype=tf.float32),
             "label":tf.FixedLenFeature(shape=(),dtype=tf.int64)
         }
     )
@@ -24,8 +23,8 @@ def _parse_data(example_proto):
     raw = parsed_features["image_raw"]
     label = parsed_features["label"]
     # decode raw
-    image = tf.decode_raw(bytes=raw, out_type=tf.int64)
-    image=tf.reshape(tensor=image,shape=[28,28])
+    #image = tf.decode_raw(bytes=raw, out_type=tf.int64)
+    image=tf.reshape(tensor=raw,shape=[28,28])
     return image,label
 
 #使用map处理得到新的dataset
@@ -38,13 +37,16 @@ iterator=dataset.make_one_shot_iterator()
 next_element=iterator.get_next()
 
 with tf.Session() as sess:
-    for i in range(10):
-        image, label = sess.run(next_element)
-        print(label)
-        print(image.shape)
-        print(label.shape)
-        #plt.imshow(image)
-        #plt.show()
+    image, label = sess.run(next_element)
+    print(label)
+    print(label.shape)
+    print(image.shape)
+    print(image)
+    plt.imshow(image)
+    plt.show()
+
+
+
 
 
 

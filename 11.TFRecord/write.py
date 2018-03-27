@@ -9,7 +9,7 @@ train_frame=pd.read_csv(filepath_or_buffer="../Mnist/train.csv")
 train_labels_frame=train_frame.pop(item="label")
 #print(train_labels_frame.shape)
 
-train_values=train_frame.values
+train_values=train_frame.values.astype(np.float32)
 train_size=train_values.shape[0]
 train_labels_values=train_labels_frame.values
 
@@ -21,11 +21,11 @@ train_labels_values=train_labels_frame.values
 #------------------------------create TFRecord file----------------------------#
 writer=tf.python_io.TFRecordWriter(path="train.tfrecords")
 for i in range(train_size):
-    image_raw=train_values[i].tostring()
+    image_raw=train_values[i]
     example=tf.train.Example(
         features=tf.train.Features(
             feature={
-                "image_raw":tf.train.Feature(bytes_list=tf.train.BytesList(value=[image_raw])),
+                "image_raw":tf.train.Feature(float_list=tf.train.FloatList(value=image_raw)),
                 "label":tf.train.Feature(int64_list=tf.train.Int64List(value=[train_labels_values[i]]))
             }
         )
