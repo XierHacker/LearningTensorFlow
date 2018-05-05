@@ -1,15 +1,16 @@
-import numpy as np
-from tensorflow.examples.tutorials.mnist import input_data
-import pandas
+from time import sleep
+from timeit import timeit
+import re
 
-mnist = input_data.read_data_sets('MNIST_data', one_hot=True)
-print(mnist.train.images.shape)
+# Simple demo
+from tqdm import trange
+for i in trange(16, leave=True):
+    sleep(0.1)
 
-print(mnist.train.images[0].shape)
+# Profiling/overhead tests
+stmts = filter(None, re.split(r'\n\s*#.*?\n', __doc__))
+for s in stmts:
+    print(s.replace('import tqdm\n', ''))
+    print(timeit(stmt='try:\n\t_range = xrange'
+                 '\nexcept:\n\t_range = range\n' + s, number=1), 'seconds')
 
-batch = mnist.train.next_batch(10)
-
-
-print(batch[0].shape)
-print(batch[1].shape)
-print()

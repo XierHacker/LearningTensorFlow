@@ -9,6 +9,7 @@ with graph.as_default():
     c=a+b
     cons=tf.constant(value=[1,2,3,4,5],name="cons")
     init_op=tf.global_variables_initializer()
+    #Saver class
     saver=tf.train.Saver()
 
 with tf.Session(graph=graph) as sess:
@@ -16,4 +17,5 @@ with tf.Session(graph=graph) as sess:
     print("c:\n",sess.run(c))
     print("cons:\n",sess.run(cons))
     #save model
-    saver.save(sess=sess,save_path="./model.ckpt")
+    path=saver.save(sess=sess,save_path="./model.ckpt")
+    print("path:",path)
