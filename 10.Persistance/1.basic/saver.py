@@ -5,6 +5,7 @@ import numpy as np
 graph=tf.Graph()
 with graph.as_default():
     a=tf.Variable(initial_value=[[1,2],[3,4]],dtype=tf.float32,name="a")
+    print(a)
     b = tf.Variable(initial_value=[[1, 1], [1, 1]], dtype=tf.float32, name="b")
     c=a+b
     cons=tf.constant(value=[1,2,3,4,5],name="cons")

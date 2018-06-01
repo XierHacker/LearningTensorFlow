@@ -18,7 +18,6 @@ def _parse_data(example_proto):
             "label":tf.FixedLenFeature(shape=(),dtype=tf.int64)
         }
     )
-
     # get single feature
     raw = parsed_features["image_raw"]
     label = parsed_features["label"]
