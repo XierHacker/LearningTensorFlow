@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 #tfrecord 文件列表
-file_list=["cifar_10_valid.tfrecords"]
+file_list=["dog_vs_cat_valid.tfrecords"]
 
 #创建dataset对象
 dataset=tf.data.TFRecordDataset(filenames=file_list)
@@ -23,8 +23,12 @@ def _parse_data(example_proto):
     raw = parsed_features["image_raw"]
     label = parsed_features["label"]
     # decode raw
-    image = tf.decode_raw(bytes=raw, out_type=tf.float32)
-    image=tf.reshape(tensor=image,shape=[32,32,-1])
+    image = tf.decode_raw(bytes=raw, out_type=tf.uint8)
+    image = tf.reshape(tensor=image, shape=(250, 250, 3))
+    #crop
+    image=tf.image.resize_image_with_crop_or_pad(image=image,target_height=224,target_width=224)
+    #trans to float
+    image=tf.image.convert_image_dtype(image=image,dtype=tf.float32)
     return image,label
 
 #使用map处理得到新的dataset
@@ -39,13 +43,14 @@ next_element=iterator.get_next()
 
 with tf.Session() as sess:
     for i in range(10):
-        image, label = sess.run(next_element)
-        print(label)
-        print("image.shape:",image.shape)
-        print("label.shape",label.shape)
-        plt.imshow(image)
+        element = sess.run(next_element)
+        print("label:",element[1])
+        print("image.shape:",element[0].shape)
+        print("label.shape",element[1].shape)
+
+        plt.imshow(element[0])
         plt.show()
 
 
-#if __name__=="__main__":
 
+#if __name__=="__main__":

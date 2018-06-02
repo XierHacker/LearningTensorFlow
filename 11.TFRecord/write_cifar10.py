@@ -29,8 +29,10 @@ def pics2tfrecords(folder,is_train):
     print("Trans Pictures To TFRecords")
     if is_train:
         train_labels_frame = pd.read_csv(filepath_or_buffer=folder+"trainLabels.csv")
+        writer_train = tf.python_io.TFRecordWriter(path="cifar_10_train.tfrecords")
+        writer_valid = tf.python_io.TFRecordWriter(path="cifar_10_valid.tfrecords")
+
         #training set
-        writer_train=tf.python_io.TFRecordWriter(path="cifar_10_train.tfrecords")
         for i in range(1,45000+1):
             pic = mpimg.imread(fname=folder+"train/"+str(i)+".png")
             pic_raw=pic.tostring()
@@ -48,9 +50,21 @@ def pics2tfrecords(folder,is_train):
         writer_train.close()
 
         #validation set
-        #for i in range(45000+1,50000+1):
-        #    pic = mpimg.imread(fname=folder + "train/" + str(i) + ".png")
+        for i in range(45000+1,50000+1):
+            pic = mpimg.imread(fname=folder + "train/" + str(i) + ".png")
+            pic_raw = pic.tostring()
+            kind = mapping_dict[train_labels_frame["label"][i - 1]]
 
+            example = tf.train.Example(
+                features=tf.train.Features(
+                    feature={
+                        "image_raw": tf.train.Feature(bytes_list=tf.train.BytesList(value=[pic_raw])),
+                        "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[kind]))
+                    }
+                )
+            )
+            writer_valid.write(record=example.SerializeToString())
+        writer_valid.close()
 
     else:
         pass
