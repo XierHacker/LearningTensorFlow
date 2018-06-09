@@ -5,19 +5,20 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
+#read picture
 pic=mpimg.imread("../../data/DogsVsCats/train/cat.0.jpg")
 print(pic)
-#plt.imshow(pic)
-#plt.show()
-cv2.imshow(winname="pic",mat=pic)
-cv2.waitKey()
+plt.imshow(pic)
+plt.show()
 
-pic=cv2.resize(src=pic,dsize=(300,300),interpolation=cv2.INTER_AREA)
-cv2.imshow(winname="pic",mat=pic)
-cv2.waitKey()
+#randon random_flip_left_right
+flip_pic=tf.image.random_flip_left_right(image=pic)
+
+#tf.image.random_flip_up_down
+flip_pic=tf.image.random_flip_up_down(image=flip_pic)
 
 new=tf.image.resize_image_with_crop_or_pad(image=pic,target_height=224,target_width=224)
 
 with tf.Session() as sess:
-    plt.imshow(sess.run(new))
+    plt.imshow(sess.run(flip_pic))
     plt.show()
