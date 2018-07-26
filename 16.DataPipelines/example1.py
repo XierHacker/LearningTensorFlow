@@ -1,5 +1,6 @@
 import tensorflow as tf
 import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -35,9 +36,16 @@ print(dataset.output_shapes)
 #create iterator
 iterator=dataset.make_one_shot_iterator()
 elememt=iterator.get_next()
+x=elememt[0]
+label=elememt[1]
+
 
 with tf.Session() as sess:
-    ele=sess.run(elememt)
-    print("image:\n",ele[0])
-    print("label:\n",ele[1])
-
+    #ele=sess.run(elememt)
+    for i in range(3):
+        image=sess.run(x)
+        #label_image=sess.run(label)
+        print("image:\n",image)
+        #print("label:\n",label_image)
+        plt.imshow(image)
+        plt.show()
