@@ -17,8 +17,8 @@ TEST_EXAMPLES=28000
 
 #------------------------------------Generate Data-----------------------------------------------#
 #generate data
-train_frame = pd.read_csv("../Mnist/train.csv")
-test_frame = pd.read_csv("../Mnist/test.csv")
+train_frame = pd.read_csv("../../Mnist/train.csv")
+test_frame = pd.read_csv("../../Mnist/test.csv")
 
 # pop the labels and one-hot coding
 train_labels_frame = train_frame.pop("label")
@@ -57,8 +57,6 @@ with graph.as_default():
     lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
     lstm_backward=rnn.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
 
-
-    '''
     outputs,states=tf.nn.bidirectional_dynamic_rnn(
         cell_fw=lstm_forward,
         cell_bw=lstm_backward,
@@ -69,7 +67,7 @@ with graph.as_default():
     outputs_fw=outputs[0]
     outputs_bw = outputs[1]
     h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
-    '''
+
 
    # print(h.shape)
     #---------------------------------------;-----------------------------------------------------#

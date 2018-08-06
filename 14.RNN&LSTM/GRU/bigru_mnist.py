@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow.contrib.rnn as rnn
+from tensorflow.contrib.layers.python.layers import initializers
 import matplotlib.pyplot as plt
 
 
@@ -10,15 +11,15 @@ BATCH_SIZE=128
 HIDDEN_UNITS1=30
 HIDDEN_UNITS=10
 LEARNING_RATE=0.001
-EPOCH=50
+EPOCH=10
 
 TRAIN_EXAMPLES=42000
 TEST_EXAMPLES=28000
 
 #------------------------------------Generate Data-----------------------------------------------#
 #generate data
-train_frame = pd.read_csv("../Mnist/train.csv")
-test_frame = pd.read_csv("../Mnist/test.csv")
+train_frame = pd.read_csv("../../Mnist/train.csv")
+test_frame = pd.read_csv("../../Mnist/test.csv")
 
 # pop the labels and one-hot coding
 train_labels_frame = train_frame.pop("label")
@@ -49,20 +50,36 @@ with graph.as_default():
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,10),name="pred_placeholder")
 
     #gru instance
-    gru_forward_1=rnn.GRUCell(num_units=HIDDEN_UNITS1)
-    gru_forward_2=rnn.GRUCell(num_units=HIDDEN_UNITS)
+    gru_forward_1=tf.nn.rnn_cell.GRUCell(
+        num_units=HIDDEN_UNITS1,
+        kernel_initializer=initializers.xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
+    )
+
+    gru_forward_1 = rnn.AttentionCellWrapper(cell=gru_forward_1, attn_length=5)
+
+    gru_forward_2=tf.nn.rnn_cell.GRUCell(
+        num_units=HIDDEN_UNITS,
+        kernel_initializer=initializers.xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
+    )
+    gru_forward_2 = rnn.AttentionCellWrapper(cell=gru_forward_2, attn_length=5)
     gru_forward=rnn.MultiRNNCell(cells=[gru_forward_1,gru_forward_2])
-    #lstm_forward_1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    #lstm_forward_2=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
-    #lstm_forward=rnn.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
 
-    gru_backward_1=rnn.GRUCell(num_units=HIDDEN_UNITS1)
-    gru_backward_2=rnn.GRUCell(num_units=HIDDEN_UNITS)
+    gru_backward_1=tf.nn.rnn_cell.GRUCell(
+        num_units=HIDDEN_UNITS1,
+        kernel_initializer=initializers.xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
+    )
+
+    gru_backward_1 = rnn.AttentionCellWrapper(cell=gru_backward_1, attn_length=5)
+    gru_backward_2=tf.nn.rnn_cell.GRUCell(
+        num_units=HIDDEN_UNITS,
+        kernel_initializer=initializers.xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
+    )
+    gru_backward_2 = rnn.AttentionCellWrapper(cell=gru_backward_2, attn_length=5)
     gru_backward=rnn.MultiRNNCell(cells=[gru_backward_1,gru_backward_2])
-
-    #lstm_backward_1 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
-    #lstm_backward_2 = rnn.BasicLSTMCell(num_units=HIDDEN_UNITS)
-    #lstm_backward=rnn.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
 
     outputs,states=tf.nn.bidirectional_dynamic_rnn(
         cell_fw=gru_forward,
