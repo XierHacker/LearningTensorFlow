@@ -1,5 +1,6 @@
 # LearningTensorFlow
-博客：[谢小小XH的博客](http://blog.csdn.net/xierhacker/article/category/6511974)
+
+## [谢小小XH的博客](http://blog.csdn.net/xierhacker/article/category/6511974)
 
 ### [**TensorFlow学习（一）：感受一下**](http://blog.csdn.net/xierhacker/article/details/53102355)
 
