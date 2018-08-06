@@ -10,15 +10,15 @@ BATCH_SIZE=128
 HIDDEN_UNITS1=30
 HIDDEN_UNITS=10
 LEARNING_RATE=0.001
-EPOCH=50
+EPOCH=20
 
 TRAIN_EXAMPLES=42000
 TEST_EXAMPLES=28000
 
 #------------------------------------Generate Data-----------------------------------------------#
 #generate data
-train_frame = pd.read_csv("../Mnist/train.csv")
-test_frame = pd.read_csv("../Mnist/test.csv")
+train_frame = pd.read_csv("../../Mnist/train.csv")
+test_frame = pd.read_csv("../../Mnist/test.csv")
 
 # pop the labels and one-hot coding
 train_labels_frame = train_frame.pop("label")
