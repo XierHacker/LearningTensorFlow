@@ -50,41 +50,42 @@ with graph.as_default():
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,10),name="pred_placeholder")
 
     #lstm instance
-    lstm_forward_1=tf.nn.rnn_cell.LSTMCell(
+    lstm_forward_1=rnn.IndyLSTMCell(
         num_units=HIDDEN_UNITS1,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS1
+        activation=tf.nn.leaky_relu,
+        kernel_initializer=xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
     )
+
 
     #加attention(这里的attention和encoder-decoder架构的attention稍有不同,可以看做简化版本的attention)
     lstm_forward_1=rnn.AttentionCellWrapper(cell=lstm_forward_1,attn_length=5)
 
-    lstm_forward_2 = tf.nn.rnn_cell.LSTMCell(
+    lstm_forward_2 = rnn.IndyLSTMCell(
         num_units=HIDDEN_UNITS,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS
+        activation=tf.nn.leaky_relu,
+        kernel_initializer=tf.initializers.ones(),
+        bias_initializer=tf.initializers.random_normal()
     )
 
     # 加attention
     lstm_forward_2 = rnn.AttentionCellWrapper(cell=lstm_forward_2, attn_length=5)
     lstm_forward=tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
 
-    lstm_backward_1 = tf.nn.rnn_cell.LSTMCell(
+    lstm_backward_1 = rnn.IndyLSTMCell(
         num_units=HIDDEN_UNITS1,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS1
+        activation=tf.nn.leaky_relu,
+        kernel_initializer=xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
     )
     #加attention
     lstm_backward_1 = rnn.AttentionCellWrapper(cell=lstm_backward_1, attn_length=5)
 
-    lstm_backward_2 = tf.nn.rnn_cell.LSTMCell(
+    lstm_backward_2 = rnn.IndyLSTMCell(
         num_units=HIDDEN_UNITS,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS
+        activation=tf.nn.leaky_relu,
+        kernel_initializer=tf.initializers.ones(),
+        bias_initializer=tf.initializers.random_normal()
     )
     lstm_backward_2 = rnn.AttentionCellWrapper(cell=lstm_backward_2, attn_length=5)
     lstm_backward=tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])

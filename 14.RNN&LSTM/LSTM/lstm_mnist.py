@@ -52,9 +52,9 @@ with graph.as_default():
     #lstm_cell1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
     lstm_cell=tf.nn.rnn_cell.LSTMCell(
         num_units=HIDDEN_UNITS,
-        use_peepholes=True,
+        use_peepholes=False,
         initializer=initializers.xavier_initializer(),
-        num_proj=HIDDEN_UNITS
+        #num_proj=HIDDEN_UNITS
     )
 
     #multi_lstm=rnn.MultiRNNCell(cells=[lstm_cell1,lstm_cell])

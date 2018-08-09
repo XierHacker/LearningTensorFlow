@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow.contrib.rnn as rnn
-from tensorflow.contrib.layers.python.layers.initializers import xavier_initializer
+from tensorflow.contrib.layers.python.layers import initializers
 import matplotlib.pyplot as plt
 
 
@@ -39,7 +39,6 @@ X_test=np.reshape(X_test,newshape=(-1,28,28))
 
 #-----------------------------------------------------------------------------------------------------#
 
-
 #--------------------------------------Define Graph---------------------------------------------------#
 graph=tf.Graph()
 with graph.as_default():
@@ -50,56 +49,45 @@ with graph.as_default():
     y_p=tf.placeholder(dtype=tf.float32,shape=(None,10),name="pred_placeholder")
 
     #lstm instance
-    lstm_forward_1=tf.nn.rnn_cell.LSTMCell(
-        num_units=HIDDEN_UNITS1,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS1
-    )
-
-    #加attention(这里的attention和encoder-decoder架构的attention稍有不同,可以看做简化版本的attention)
-    lstm_forward_1=rnn.AttentionCellWrapper(cell=lstm_forward_1,attn_length=5)
-
-    lstm_forward_2 = tf.nn.rnn_cell.LSTMCell(
+    #lstm_cell1=rnn.BasicLSTMCell(num_units=HIDDEN_UNITS1)
+    lstm_cell=rnn.IndyLSTMCell(
         num_units=HIDDEN_UNITS,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS
+        kernel_initializer=initializers.xavier_initializer(),
+        bias_initializer=tf.initializers.random_normal()
     )
+    #lstm_cell=tf.nn.rnn_cell.LSTMCell(
+    #    num_units=HIDDEN_UNITS,
+    #    use_peepholes=True,
+    #    initializer=initializers.xavier_initializer(),
+    #    num_proj=HIDDEN_UNITS
+    #)
 
-    # 加attention
-    lstm_forward_2 = rnn.AttentionCellWrapper(cell=lstm_forward_2, attn_length=5)
-    lstm_forward=tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_forward_1,lstm_forward_2])
+    #multi_lstm=rnn.MultiRNNCell(cells=[lstm_cell1,lstm_cell])
 
-    lstm_backward_1 = tf.nn.rnn_cell.LSTMCell(
-        num_units=HIDDEN_UNITS1,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS1
-    )
-    #加attention
-    lstm_backward_1 = rnn.AttentionCellWrapper(cell=lstm_backward_1, attn_length=5)
+    #initialize to zero
+    init_state=lstm_cell.zero_state(batch_size=BATCH_SIZE,dtype=tf.float32)
 
-    lstm_backward_2 = tf.nn.rnn_cell.LSTMCell(
-        num_units=HIDDEN_UNITS,
-        use_peepholes=True,
-        initializer=xavier_initializer(),
-        #num_proj=HIDDEN_UNITS
-    )
-    lstm_backward_2 = rnn.AttentionCellWrapper(cell=lstm_backward_2, attn_length=5)
-    lstm_backward=tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_backward_1,lstm_backward_2])
+    '''
+    #dynamic rnn
+    outputs,states=tf.nn.dynamic_rnn(cell=multi_lstm,inputs=X_p,initial_state=init_state,dtype=tf.float32)
+    #print(outputs.shape)
+    h=outputs[:,-1,:]
+    #print(h.shape)
+    '''
 
-    outputs,states=tf.nn.bidirectional_dynamic_rnn(
-        cell_fw=lstm_forward,
-        cell_bw=lstm_backward,
-        inputs=X_p,
-        dtype=tf.float32
-    )
-
-    outputs_fw=outputs[0]
-    outputs_bw = outputs[1]
-    h=outputs_fw[:,-1,:]+outputs_bw[:,-1,:]
-   # print(h.shape)
+    outputs=[]
+    state=init_state
+    with tf.variable_scope("RNN"):
+        for time_step in range(TIME_STEPS):
+            if time_step>0:
+                tf.get_variable_scope().reuse_variables()
+            #shape of output is [batch_size,units_size],input:[batch_size,input_size]
+            output,state=lstm_cell(inputs=X_p[:,time_step,:],state=state)
+            #print(output.shape)
+            outputs.append(output)
+        #print(len(outputs))
+    h=outputs[-1]
+    #print(h.shape)
     #--------------------------------------------------------------------------------------------#
 
     #---------------------------------define loss and optimizer----------------------------------#
