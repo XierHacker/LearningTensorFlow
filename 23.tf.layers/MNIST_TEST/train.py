@@ -4,7 +4,7 @@ import tensorflow as tf
 import model
 import parameter
 
-TIME_STEPS=28
+
 BATCH_SIZE=128
 LEARNING_RATE=0.001
 EPOCH=10
