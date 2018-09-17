@@ -49,6 +49,8 @@ def train(train_set,train_lables):
                 accus.append(accu)
                 # print("s_fw:",s_fw[0])
                 # print("o_fw:",o_fw[0])
+            print("train_losses.size",len(train_losses))
+            print("accus.size",len(accus))
             print("average training loss:", sum(train_losses) / len(train_losses))
             print("accuracy:", sum(accus) / len(accus))
 
