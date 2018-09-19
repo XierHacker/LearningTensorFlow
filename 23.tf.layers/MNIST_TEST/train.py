@@ -6,7 +6,7 @@ import parameter
 
 
 BATCH_SIZE=128
-LEARNING_RATE=0.005
+LEARNING_RATE=0.003
 EPOCH=50
 
 TRAIN_EXAMPLES=42000
@@ -18,7 +18,8 @@ def train(train_set,train_lables):
     y_p = tf.placeholder(dtype=tf.float32, shape=(None, 10), name="pred_placeholder")
 
     m=model.Model()
-    regularizer = tf.contrib.layers.l2_regularizer(0.0001)
+    #regularizer = tf.contrib.layers.l2_regularizer(0.0001)
+    regularizer = None
     logits=m.forward(input=X_p,regularizer=regularizer)
 
     loss = tf.losses.softmax_cross_entropy(onehot_labels=y_p, logits=logits)
@@ -81,7 +82,7 @@ if __name__=="__main__":
     print(X_test.shape)
 
     # -----------------------------------------------------------------------------------------------------#
-    train(X_train,y_train)
+    train(X_train/255,y_train)
 
 
 
