@@ -42,18 +42,45 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.layers.python.layers import initializers
 
-lstm_cell=tf.nn.rnn_cell.LSTMCell(
+lstm_cell_1=tf.nn.rnn_cell.LSTMCell(
     num_units=128,
     use_peepholes=True,
     initializer=initializers.xavier_initializer(),
     num_proj=64,
-    name="LSTM_CELL"
+    name="LSTM_CELL_1"
 )
 
-print("output_size:",lstm_cell.output_size)
-print("state_size:",lstm_cell.state_size)
-print(lstm_cell.state_size.h)
-print(lstm_cell.state_size.c)
+lstm_cell_2=tf.nn.rnn_cell.LSTMCell(
+    num_units=128,
+    use_peepholes=True,
+    initializer=initializers.xavier_initializer(),
+    num_proj=64,
+    name="LSTM_CELL_2"
+)
 
 
+lstm_cell_3=tf.nn.rnn_cell.LSTMCell(
+    num_units=128,
+    use_peepholes=True,
+    initializer=initializers.xavier_initializer(),
+    num_proj=64,
+    name="LSTM_CELL_3"
+)
+
+multi_cell=tf.nn.rnn_cell.MultiRNNCell(cells=[lstm_cell_1,lstm_cell_2,lstm_cell_3])
+
+X=tf.ones(shape=(20,30,128),dtype=tf.float32)
+
+outputs,states=tf.nn.dynamic_rnn(cell=multi_cell,inputs=X,dtype=tf.float32)
+
+print("outputs:",outputs)
+print("states:",states)
+
+# print("output_size:",multi_cell.output_size)
+# print("state_size:",type(multi_cell.state_size))
+# print("state_size:",multi_cell.state_size)
+#
+# #需要先索引到具体的那层cell，然后取出具体的state状态
+# print(multi_cell.state_size[0].h)
+# print(multi_cell.state_size[0].c)
 
