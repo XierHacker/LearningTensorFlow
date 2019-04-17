@@ -30,7 +30,7 @@ print(y_train.shape)
 
 #create dataset
 dataset=tf.data.Dataset.from_tensor_slices(tensors=(X_train,y_train))
-print(dataset.output_shapes)
+#print(dataset.output_shapes)
 #print(dataset[0])
 
 #create iterator
