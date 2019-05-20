@@ -5,7 +5,7 @@ import tensorflow as tf
 EPOCH=20
 BATCH_SIZE=100
 TRAIN_EXAMPLES=42000
-LEARNING_RATE=0.1
+LEARNING_RATE=0.01
 
 #------------------------Generate Data---------------------------#
 #generate data
@@ -44,8 +44,6 @@ class MLP(tf.Module):
         logits_1=tf.nn.relu(logits_1)
         logits_2 = tf.matmul(logits_1, self.w_2) + self.b_2
         return logits_2
-
-
 
 def train():
     mlp=MLP(hidden_dim=200)

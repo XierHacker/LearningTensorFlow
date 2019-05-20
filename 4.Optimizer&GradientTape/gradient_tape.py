@@ -35,5 +35,21 @@ def gradient_test():
     print("type of dz1_d:",type(dz1_d))
 
 
+def keras_test():
+    input=tf.ones(shape=(20,748))
+    a = tf.keras.layers.Dense(32)
+    b = tf.keras.layers.Dense(32)
+    print("a.variabels:",a.variables)
+
+    with tf.GradientTape(watch_accessed_variables=False) as tape:
+        tape.watch(a.variables)
+        result=a(input)
+        print("a.variabels:", a.variables)
+        gradient=tape.gradient(result, a.variables)  # The result of this computation will be
+        print("gradient:",gradient)
+        # a list of `None`s since a's variables
+        # are not being watched.
+
 if __name__=="__main__":
-    gradient_test()
+    #gradient_test()
+    keras_test()
