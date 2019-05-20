@@ -41,6 +41,7 @@ def assign_value_test():
     np_value=a.numpy()
     np_value[1,1]=999
     print("np_value:\n",np_value)
+    print("a:\n", a)
 
 
 

@@ -1,5 +1,10 @@
 # LearningTensorFlow
 
+注意：
+- 教程已经全部迁移到**tensorflow 2.0**
+
+
+
 ## [谢小小XH的博客](http://blog.csdn.net/xierhacker/article/category/6511974)
 
 ### [**TensorFlow学习（一）：感受一下**](http://blog.csdn.net/xierhacker/article/details/53102355)
