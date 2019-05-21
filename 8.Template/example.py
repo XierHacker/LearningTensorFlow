@@ -30,7 +30,7 @@ print(X_test.shape)
 
 #------------------------------------------------------------------#
 
-class MLP(tf.Module):
+class MLP(tf.keras.Model):
     def __init__(self,hidden_dim):
         super(MLP,self).__init__()
         self.w_1=tf.Variable(initial_value=tf.random.normal(shape=(784,hidden_dim)),name="w_1")
