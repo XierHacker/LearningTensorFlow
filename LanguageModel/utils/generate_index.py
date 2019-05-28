@@ -6,8 +6,6 @@ OUT_FILE="chars_ids.csv"
 IN_FILE_LIST=["../ptb_corpus/ptb.test.txt","../ptb_corpus/ptb.train.txt","../ptb_corpus/ptb.valid.txt"]
 EXTRA_CHARS=["<sos>","<eos>","<unk>"]
 
-
-
 def generate(file_list):
     counter=Counter()
     print("counter:\n",counter)

@@ -43,8 +43,6 @@ def index(word_list,mapper):
     # print("\n\n")
     return x,y,seq_len
 
-
-
 def preprocess(infile,outfile):
     '''
 
@@ -108,13 +106,15 @@ def readTFRecords(tfrecords_file_list):
     # 创建dataset对象
     dataset = tf.data.TFRecordDataset(filenames=tfrecords_file_list)
     print("dataset:",dataset)
-    # # # 使用map处理得到新的dataset
+    # 使用map处理得到新的dataset
     parsed_dataset = dataset.map(map_func=_parse_data)
     # dataset = dataset.map(map_func=_parse_data)
     parsed_dataset = parsed_dataset.batch(2)
-
-    for parsed_record in parsed_dataset.take(1):
-        print("parsed_records:",parsed_record[0])
+    print("parsed_dataset:", parsed_dataset)
+    #for parsed_record in parsed_dataset.take(1):
+    #    print("parsed_records:",parsed_record[0])
+    for parsed_record in parsed_dataset:
+        print("parsed_records:", parsed_record[1])
 
 
 if __name__=="__main__":

@@ -61,6 +61,47 @@ __init__(
 - mask: Binary tensor of shape (samples, timesteps) indicating whether a given timestep should be masked.
 - training: Python boolean indicating whether the layer should behave in training mode or in inference mode. This argument is passed to the cell when calling it. This is only relevant if dropout or recurrent_dropout is used.
 - initial_state: List of initial state tensors to be passed to the first call of the cell.
+
+
+
+
+
+tf.keras.layers.Bidirectional
+
+作用：双向RNN的封装
+
+参数:
+- layer: 循环神经网络相关层的一些实例.
+- merge_mode: RNN的前向和反向融合在一起的方式，可以是{'sum', 'mul', 'concat', 'ave', None}其中之一. 如果选择None，那么不会融合，返回一个list
+
+调用参数:
+和封装的RNN实例的调用参数一样
+
+
+Examples:
+model = Sequential()
+model.add(Bidirectional(LSTM(10, return_sequences=True), input_shape=(5,
+10)))
+model.add(Bidirectional(LSTM(10)))
+model.add(Dense(5))
+model.add(Activation('softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+
+__init__
+__init__(
+    layer,
+    merge_mode='concat',
+    weights=None,
+    **kwargs
+)
+
+Properties
+constraints
+Methods
+reset_states
+reset_states()
+
+
 '''
 
 
@@ -142,9 +183,36 @@ def lstm1_test():
     print("\n\n")
 
 
+def lstm2_test():
+    # 模拟一个batch为20，时间步为40，embedding大小为200的输入
+    input = tf.ones(shape=(20, 40, 200), dtype=tf.float32, name="input")
+
+    # lstm1,默认输出为最后一个时间步的结果
+    lstm1 = layers.LSTM(units=100)
+    bilstm1=layers.Bidirectional(layer=lstm1,merge_mode="concat")
+    result1 = bilstm1(inputs=input, mask=None, training=True)
+    print("result1:\n", result1)
+    print("\n\n")
+
+    # # lstm2：输出为整个时间步的结果
+    # lstm2 = layers.LSTM(units=100, return_sequences=True)
+    # result2 = lstm2(inputs=input, mask=None, training=True)
+    # print("result2:\n", result2)
+    # print("\n\n")
+    #
+    # # lstm3:输入整个时间步和状态的结果(tensorflow 1.x默认方式)
+    # lstm3 = layers.LSTM(units=100, return_sequences=True, return_state=True)
+    # result3 = lstm3(inputs=input, mask=None, training=True)
+    # print("result3:\n", result3)
+    # print("len of result3:\n", len(result3))
+    # print("\n\n")
+
+
+
 
 if __name__=="__main__":
     lstm1_test()
+    lstm2_test()
 
 
 
