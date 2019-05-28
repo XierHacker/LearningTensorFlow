@@ -82,50 +82,40 @@ def train():
         checkpoint.save(file_prefix="./checkpoints/test")
 
 
-    correct_prediction = tf.equal(tf.argmax(logits_2, 1), tf.argmax(y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE], 1))
-    accuracy = tf.math.reduce_mean(tf.cast(correct_prediction, "float"))
+
 
 
 def test():
     mlp = MLP(hidden_dim=200)
     optimizer = tf.keras.optimizers.SGD(LEARNING_RATE)
-    checkpoint = tf.train.Checkpoint(optimizer=optimizer, model=mlp)
-    for epoch in range(1, EPOCH + 1):
-        print("epoch:", epoch)
-        train_losses = []
-        accus = []
-        for j in range(TRAIN_EXAMPLES // BATCH_SIZE):
-            with tf.GradientTape() as tape:
-                logits_2 = mlp(X_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE])
-                entropy = tf.nn.softmax_cross_entropy_with_logits(
-                    labels=y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
-                    logits=logits_2
-                )
-                loss = tf.math.reduce_mean(entropy)
-                # print("loss:",loss)
+    checkpoint = tf.train.Checkpoint(model=mlp)
+    checkpoint.restore(save_path="./checkpoints/test-3")
 
-                # 计算梯度
-                gradient = tape.gradient(target=loss, sources=mlp.trainable_variables)
-                # print("gradient:",gradient)
-                # 应用梯度
-                optimizer.apply_gradients(zip(gradient, mlp.trainable_variables))
+    train_losses = []
+    accus = []
+    for j in range(TRAIN_EXAMPLES // BATCH_SIZE):
+        logits_2 = mlp(X_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE])
+        entropy = tf.nn.softmax_cross_entropy_with_logits(
+            labels=y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE],
+            logits=logits_2
+        )
+        loss = tf.math.reduce_mean(entropy)
+        train_losses.append(loss.numpy())
+        correct_prediction = tf.equal(tf.argmax(logits_2, 1),
+                                      tf.argmax(y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE], 1))
+        accuracy = tf.math.reduce_mean(tf.cast(correct_prediction, "float")).numpy()
+        accus.append(accuracy)
 
-                train_losses.append(loss.numpy())
-            correct_prediction = tf.equal(tf.argmax(logits_2, 1),
-                                          tf.argmax(y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE], 1))
-            accuracy = tf.math.reduce_mean(tf.cast(correct_prediction, "float")).numpy()
-            accus.append(accuracy)
-        print("average training loss:", sum(train_losses) / len(train_losses))
-        print("accuracy:", sum(accus) / len(accus))
+    print("average training loss:", sum(train_losses) / len(train_losses))
+    print("accuracy:", sum(accus) / len(accus))
 
-        # save model
-        checkpoint.save(file_prefix="./checkpoints/test")
 
-    correct_prediction = tf.equal(tf.argmax(logits_2, 1), tf.argmax(y_train[j * BATCH_SIZE:(j + 1) * BATCH_SIZE], 1))
-    accuracy = tf.math.reduce_mean(tf.cast(correct_prediction, "float"))
 
 
 
 if __name__=="__main__":
-    #train()
-    test()
+    istrain=False
+    if istrain:
+        train()
+    else:
+        test()
