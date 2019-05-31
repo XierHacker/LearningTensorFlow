@@ -20,3 +20,6 @@ TRAIN_FILE_LIST=["../dataset/train.tfrecords"]
 TEST_FILE_LIST=["../dataset/test.tfrecords"]
 #TEST_SIZE=statistic.getTFRecordsListAmount(tfFileList=TEST_FILE_LIST)
 
+
+#模型存放地址
+CHECKPOINT_PATH="./checkpoints/lstm"

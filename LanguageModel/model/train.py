@@ -38,6 +38,7 @@ def train(tfrecords_file_list):
     )
     optimizer = tf.keras.optimizers.Adam(parameter.LEARNING_RATE)
     cce = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    checkpoint=tf.train.Checkpoint(model=model)
 
     # ----------------------------------------data set API-----------------------------------------
     # 创建dataset对象
@@ -77,9 +78,6 @@ def train(tfrecords_file_list):
             # print("gradient:",gradient)
             # 应用梯度
             optimizer.apply_gradients(zip(gradient, model.trainable_variables))
-
-
-
 
 if __name__=="__main__":
     train(tfrecords_file_list=parameter.TRAIN_FILE_LIST)
