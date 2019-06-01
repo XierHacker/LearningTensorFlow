@@ -9,6 +9,6 @@
 
 ## 切词和清洗
 有了语料之后的第一件事情就是对语料进行清洗和基本的切词操作了。
-对于英文的切词，这里使用moses工具中的`tokenizer.perl`，我们这里把这个文件拿过来放在
+对于英文的切词，这里使用[**moses**](https://github.com/moses-smt/mosesdecoder)工具中的`tokenizer.perl`，我们这里把这个文件拿过来放在
 本项目的`utils`文件夹下面。
 
