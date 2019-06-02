@@ -28,9 +28,28 @@ class Encoder(tf.keras.Model):
 class Decoder(tf.keras.Model):
     def __init__(self,vocab_size,embeddings_dim,units,batch_size):
         super(Decoder,self).__init__()
+        self.word_embeddings = tf.Variable(
+            initial_value=tf.random.truncated_normal(shape=(vocab_size, embeddings_dim)),
+            trainable=True
+        )
+        self.gru = tf.keras.layers.GRU(
+            units=units,
+            return_sequences=True,
+            return_state=True
+        )
 
-    def __call__(self, *args, **kwargs):
-        pass
+        self.linear=tf.keras.layers.Dense(units=vocab_size)
+
+
+    def __call__(self, word_ids,pre_states,encoder_outputs):
+        '''
+        解码器解码一个时间步的信息
+        :param word_ids: 输入的word的id，形状为[batch_size,1],因为只有一个时间步
+        :param pre_states: 解码器的上一个状态
+        :param encoder_outputs: encoder的全部输出
+        :return:
+        '''
+
 
 
 
