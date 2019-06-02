@@ -95,13 +95,13 @@ def preprocess(infile_zh,infile_en,outfile):
         word_list_en = line_en.split(sep=" ")
         #丢掉长度超过80的句子
         if len(word_list_zh)>80 or len(word_list_en)>80:
-            print("line_zh:", word_list_zh)
-            print("line_en:", word_list_en)
+            # print("line_zh:", word_list_zh)
+            # print("line_en:", word_list_en)
             continue
 
-        # print("line_zh:",word_list_zh)
-        # print("line_en:",word_list_en)
-        # index(src_word_list=word_list_zh,target_word_list=word_list_en,src_mapper=words2id_zh,target_mapper=words2id_en)
+        print("line_zh:",word_list_zh)
+        print("line_en:",word_list_en)
+        index(src_word_list=word_list_zh,target_word_list=word_list_en,src_mapper=words2id_zh,target_mapper=words2id_en)
 
 
 
