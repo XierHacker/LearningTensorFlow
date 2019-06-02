@@ -7,8 +7,17 @@
 
 
 
+
+
 ## 切词和清洗
 有了语料之后的第一件事情就是对语料进行清洗和基本的切词操作了。
 对于英文的切词，这里使用[**moses**](https://github.com/moses-smt/mosesdecoder)工具中的`tokenizer.perl`，我们这里把这个文件拿过来放在
 本项目的`utils`文件夹下面。
 
+
+
+
+这里还额外提供了已经处理过的版本，之后我们使用的就是处理之后的版本，分别为`processed.zh`和`processed.en`.
+
+
+## 创建tfrecords文件
