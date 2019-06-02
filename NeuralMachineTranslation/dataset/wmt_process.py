@@ -28,6 +28,7 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
     :param target_mapper: 目标语言的mapper
     :return:
     '''
+    keep=True           #是否保留这句话，要是出现错误，Keep设置为False
     src_index=[]
     target_index_inputs=[]
     target_index_inputs.append(target_mapper["<sos>"])     #在开始添加开始"<sos>"标记
@@ -36,22 +37,35 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
     seq_len_target=0
     #handle src word list
     for word in src_word_list:
-        src_index.append(src_mapper[word])
+        if word in src_mapper.keys():
+            src_index.append(src_mapper[word])
+        else:
+            print("src word:", word)
+            print("src word list:", src_word_list)
+            src_index.append(src_mapper["<unk>"])
 
-    print("src_index:",src_index)
+    # print("src_index:",src_index)
 
     # handle target word list
     for word in target_word_list:
-        target_index_inputs.append(target_mapper[word])
-        target_index_outputs.append(target_mapper[word])
+        if word in target_mapper.keys():
+            target_index_inputs.append(target_mapper[word])
+            target_index_outputs.append(target_mapper[word])
+        else:
+            print("target word:",word)
+            print("target word list:",target_word_list)
+            target_index_inputs.append(target_mapper["<unk>"])
+            target_index_outputs.append(target_mapper["<unk>"])
     target_index_outputs.append(target_mapper["<eos>"])     #在末尾添加结束"<eos>"标记
 
-    print("target_index_inputs:", target_index_inputs,len(target_index_inputs))
-    print("target_index_outputs:", target_index_outputs,len(target_index_outputs))
-    print("\n\n")
-
+    # print("target_index_inputs:", target_index_inputs,len(target_index_inputs))
+    # print("target_index_outputs:", target_index_outputs,len(target_index_outputs))
+    # print("\n\n")
 
     # print("target_index:", target_index)
+
+    return src_index,len(src_index),target_index_inputs,target_index_outputs,len(target_index_inputs)
+
 
 
 
@@ -64,6 +78,7 @@ def preprocess(infile_zh,infile_en,outfile):
     :param outfile: 输出的tfrecords
     :return:
     '''
+    writer = tf.io.TFRecordWriter(path=outfile)
     words2id_zh, id2words_zh=getWordsMapper("../index_files/zh_ids.csv")
     words2id_en, id2words_en = getWordsMapper("../index_files/en_ids.csv")
     # print("word2id:",words2id_en)
@@ -99,46 +114,32 @@ def preprocess(infile_zh,infile_en,outfile):
             # print("line_en:", word_list_en)
             continue
 
-        print("line_zh:",word_list_zh)
-        print("line_en:",word_list_en)
-        index(src_word_list=word_list_zh,target_word_list=word_list_en,src_mapper=words2id_zh,target_mapper=words2id_en)
+        # print("line_zh:",word_list_zh)
+        # print("line_en:",word_list_en)
+        src_index,src_len,target_index_inputs,target_index_outputs,target_len=index(
+            src_word_list=word_list_zh,
+            target_word_list=word_list_en,
+            src_mapper=words2id_zh,
+            target_mapper=words2id_en
+        )
 
-
-
-
-
-
+        # 写入到tfrecords
+        example = tf.train.Example(
+            features=tf.train.Features(
+                feature={
+                    "src_word": tf.train.Feature(int64_list=tf.train.Int64List(value=src_index)),
+                    "src_len": tf.train.Feature(int64_list=tf.train.Int64List(value=[src_len])),
+                    "target_word_input": tf.train.Feature(int64_list=tf.train.Int64List(value=target_index_inputs)),
+                    "target_word_output": tf.train.Feature(int64_list=tf.train.Int64List(value=target_index_outputs)),
+                    "target_len": tf.train.Feature(int64_list=tf.train.Int64List(value=[target_len]))
+                }
+            )
+        )
+        writer.write(record=example.SerializeToString())
+    writer.close()
     file_zh.close()
     file_en.close()
 
-
-
-
-
-
-
-
-    # writer=tf.io.TFRecordWriter(path=outfile)
-    # #print("word2id:",words2id)
-    # with open(file=infile,encoding="utf-8",errors="ignore") as in_file:
-    #     lines=in_file.readlines()
-    #     # print("lines:\n",lines)
-    #     for line in lines:
-    #         word_list=line.strip().split(sep=" ")
-    #         #print("word_list:",word_list)
-    #         x,y,seq_len=index(word_list=word_list,mapper=words2id)
-    #         # 写入到tfrecords
-    #         example = tf.train.Example(
-    #             features=tf.train.Features(
-    #                 feature={
-    #                     "word": tf.train.Feature(int64_list=tf.train.Int64List(value=x)),
-    #                     "label": tf.train.Feature(int64_list=tf.train.Int64List(value=y)),
-    #                     "seq_len": tf.train.Feature(int64_list=tf.train.Int64List(value=[seq_len]))
-    #                 }
-    #             )
-    #         )
-    #         writer.write(record=example.SerializeToString())
-    #     writer.close()
 
 
 
