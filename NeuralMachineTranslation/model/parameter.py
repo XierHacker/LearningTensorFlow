@@ -23,3 +23,6 @@ TEST_FILE_LIST=["../dataset/wmt_train.tfrecords"]
 
 #模型存放地址
 CHECKPOINT_PATH="./checkpoints/lstm"
+
+#可视化log存放地址
+LOG_DIR="./log/"

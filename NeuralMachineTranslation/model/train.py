@@ -81,6 +81,9 @@ def train(tfrecords_file_list):
     )
     checkpoint = tf.train.Checkpoint(optimizer=optimizer, encoder=encoder, decoder=decoder)
 
+    #log
+    file_writer=tf.summary.create_file_writer(logdir=parameter.LOG_DIR)
+
     # ----------------------------------------data set API-----------------------------------------
     # 创建dataset对象
     dataset = tf.data.TFRecordDataset(filenames=tfrecords_file_list)
@@ -90,6 +93,7 @@ def train(tfrecords_file_list):
     parsed_dataset = parsed_dataset.shuffle(buffer_size=1000).batch(parameter.BATCH_SIZE).repeat(count=parameter.MAX_EPOCH)
     print("parsed_dataset:", parsed_dataset)
     # ----------------------------------------------------------------------------------------------
+    iter_num=0      #迭代次数
     for parsed_record in parsed_dataset:            #一次一个mini_batch
         with tf.GradientTape() as tape:
             #准备数据
@@ -136,10 +140,18 @@ def train(tfrecords_file_list):
             loss=loss/target_word_input.shape[1]
             print("loss:",loss)
 
+            #添加标量到summary
+            tf.summary.scalar(name="loss",data=loss,step=iter_num)
+            file_writer.flush()
+
+
             #optimize
             variables=encoder.trainable_variables+decoder.trainable_variables
             gradients=tape.gradient(target=loss,sources=variables)
             optimizer.apply_gradients(zip(gradients,variables))
+
+        iter_num+=1
+    file_writer.close()
 
 
 if __name__=="__main__":
