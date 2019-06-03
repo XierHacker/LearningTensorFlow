@@ -6,7 +6,7 @@ IN_FILE_ZH="../wmt_corpus/processed.zh"
 IN_FILE_EN="../wmt_corpus/processed.en"
 OUT_FILE="wmt_train.tfrecords"
 
-write=True
+write=False
 
 def getWordsMapper(IndexFile):
     df_words_ids = pd.read_csv(filepath_or_buffer=IndexFile, encoding="utf-8")
@@ -152,16 +152,20 @@ def _parse_data(example_proto):
     parsed_features = tf.io.parse_single_example(
         serialized=example_proto,
         features={
-            "word":tf.io.VarLenFeature(dtype=tf.int64),
-            "label":tf.io.VarLenFeature(dtype=tf.int64),
-            "seq_len":tf.io.FixedLenFeature(shape=[], dtype=tf.int64)
+            "src_word":tf.io.VarLenFeature(dtype=tf.int64),
+            "src_len": tf.io.FixedLenFeature(shape=[], dtype=tf.int64),
+            "target_word_input": tf.io.VarLenFeature(dtype=tf.int64),
+            "target_word_output": tf.io.VarLenFeature(dtype=tf.int64),
+            "target_len":tf.io.FixedLenFeature(shape=[], dtype=tf.int64)
         }
     )
-    #get data,变长Feature会被处理为SparseTensor
-    word=tf.cast(x=parsed_features["word"],dtype=tf.int32)
-    label=tf.cast(x=parsed_features["label"],dtype=tf.int32)
-    seq_len=tf.cast(x=parsed_features["seq_len"],dtype=tf.int32)
-    return word,label,seq_len
+    #变长Feature会被处理为SparseTensor
+    src_word=tf.cast(x=parsed_features["src_word"],dtype=tf.int32)
+    src_len = tf.cast(x=parsed_features["src_len"], dtype=tf.int32)
+    target_word_input=tf.cast(x=parsed_features["target_word_input"],dtype=tf.int32)
+    target_word_output = tf.cast(x=parsed_features["target_word_output"], dtype=tf.int32)
+    target_len=tf.cast(x=parsed_features["target_len"],dtype=tf.int32)
+    return src_word,src_len,target_word_input,target_word_output,target_len
 
 
 def readTFRecords(tfrecords_file_list):
@@ -179,10 +183,14 @@ def readTFRecords(tfrecords_file_list):
     # dataset = dataset.map(map_func=_parse_data)
     parsed_dataset = parsed_dataset.batch(2)
     print("parsed_dataset:", parsed_dataset)
-    #for parsed_record in parsed_dataset.take(1):
-    #    print("parsed_records:",parsed_record[0])
     for parsed_record in parsed_dataset:
-        print("parsed_records:", parsed_record[1])
+        print("src_words:", tf.sparse.to_dense(parsed_record[0]))
+        print("src_len",parsed_record[1])
+        print("target_word_input:", tf.sparse.to_dense(parsed_record[2]))
+        print("target_word_output:", tf.sparse.to_dense(parsed_record[3]))
+        print("target_len", parsed_record[4])
+        print("\n\n")
+
 
 
 if __name__=="__main__":
@@ -192,5 +200,5 @@ if __name__=="__main__":
     if write:
         preprocess(infile_en=IN_FILE_EN,infile_zh=IN_FILE_ZH,outfile=OUT_FILE)
     else:
-        readTFRecords(tfrecords_file_list=["train.tfrecords"])
+        readTFRecords(tfrecords_file_list=[OUT_FILE])
 
