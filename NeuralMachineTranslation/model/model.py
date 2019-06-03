@@ -113,8 +113,6 @@ class BahdanauAttention(tf.keras.Model):
 
 
 
-
-
 if __name__=="__main__":
     # query=tf.ones(shape=(20,100),dtype=tf.float32,name="query")
     # print("query:",query)
