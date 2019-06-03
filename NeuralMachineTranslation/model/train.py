@@ -141,8 +141,9 @@ def train(tfrecords_file_list):
             print("loss:",loss)
 
             #添加标量到summary
-            tf.summary.scalar(name="loss",data=loss,step=iter_num)
-            file_writer.flush()
+            with file_writer.as_default():
+                tf.summary.scalar(name="loss",data=loss,step=iter_num)
+                file_writer.flush()
 
 
             #optimize
