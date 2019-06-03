@@ -40,6 +40,8 @@ class Decoder(tf.keras.Model):
 
         self.linear=tf.keras.layers.Dense(units=vocab_size)
 
+        self.attention=BahdanauAttention(hidden_units=units)
+
 
     def __call__(self, word_ids,pre_states,encoder_outputs):
         '''
@@ -49,6 +51,11 @@ class Decoder(tf.keras.Model):
         :param encoder_outputs: encoder的全部输出
         :return:
         '''
+        inputs=tf.nn.embedding_lookup(params=self.word_embeddings,ids=word_ids)
+
+        print("inputs.shape",inputs)
+
+
 
 
 
@@ -101,9 +108,26 @@ if __name__=="__main__":
     #
     # attention_obj=BahdanauAttention(hidden_units=100)
     # attention_obj(query=query,keys=keys,values=keys)
-    encoder=Encoder(vocab_size=5230,embeddings_dim=200,units=128,batch_size=30)
-    word_ids=[[9,26,7,40],[7,24,6,100],[5,4,200,300],[5,4,200,300]]
-    encoder(word_ids=word_ids,mask=None,training=True)
+    #encoder=Encoder(vocab_size=5230,embeddings_dim=200,units=128,batch_size=30)
+
+    word_ids=np.array([[9,26,7,40],[7,24,6,100],[5,4,200,300],[5,4,200,300]])
+    #encoder(word_ids=word_ids,mask=None,training=True)
+
+    decoder=Decoder(vocab_size=62054,embeddings_dim=200,units=128,batch_size=30)
+
+    word_ids_one_step=word_ids[:,0]
+    print("word_ids_one_step:\n",word_ids_one_step)
+    word_ids_one_step=np.expand_dims(a=word_ids_one_step,axis=-1)
+    print("word_ids_one_step:\n",word_ids_one_step)
+
+
+    decoder(word_ids=word_ids_one_step,pre_states=None,encoder_outputs=None)
+
+
+
+
+
+
 
 
 
