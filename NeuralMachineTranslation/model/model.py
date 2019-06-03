@@ -23,7 +23,6 @@ class Encoder(tf.keras.Model):
         return outputs,states
 
 
-
 class Decoder(tf.keras.Model):
     def __init__(self,vocab_size,embeddings_dim,units,batch_size):
         super(Decoder,self).__init__()
@@ -66,7 +65,7 @@ class Decoder(tf.keras.Model):
         #print("decoder inputs.shape",inputs)
 
         #output:[batch_size,1,hidden_units] states:[batch_size,hidden_units]
-        outputs,states=self.gru(inputs=inputs)
+        outputs,states=self.gru(inputs=inputs,initial_state=pre_states)
         outputs=tf.reshape(tensor=outputs,shape=(-1,outputs.shape[2])) #[batch_size,hidden_units]
         outputs=self.linear(outputs)        #[batch_size,vocab_size]
 
