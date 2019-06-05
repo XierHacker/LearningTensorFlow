@@ -91,7 +91,7 @@ def test(tfrecords_file_list):
         batch_size=parameter.BATCH_SIZE
     )
 
-    #optimizer = tf.keras.optimizers.Adam(parameter.LEARNING_RATE)
+    optimizer = tf.keras.optimizers.Adam(parameter.LEARNING_RATE)
     cce=tf.keras.losses.SparseCategoricalCrossentropy(
         from_logits=True,
         reduction=tf.keras.losses.Reduction.NONE
