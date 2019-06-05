@@ -65,6 +65,8 @@ def test(tfrecords_file_list):
     :return:
     '''
 
+    words2id_zh, id2words_zh = getWordsMapper("../index_files/zh_ids.csv")
+    words2id_en, id2words_en = getWordsMapper("../index_files/en_ids.csv")
     encoder=model.Encoder(
         vocab_size=parameter.SRC_VOCAB_SIZE,
         embeddings_dim=parameter.EMBEDDINGS_DIM,
@@ -84,11 +86,10 @@ def test(tfrecords_file_list):
         from_logits=True,
         reduction=tf.keras.losses.Reduction.NONE
     )
-    checkpoint = tf.train.Checkpoint(optimizer=optimizer, encoder=encoder, decoder=decoder)
+    checkpoint = tf.train.Checkpoint(encoder=encoder, decoder=decoder)
 
     #restore
-    #checkpoint.restore(save_path=parameter.CHECKPOINT_PATH)
-
+    checkpoint.restore(save_path=parameter.CHECKPOINT_PATH)+"-1"
 
     # ----------------------------------------data set API-----------------------------------------
     # 创建dataset对象
@@ -96,73 +97,73 @@ def test(tfrecords_file_list):
     print("dataset:", dataset)
     # 使用map处理得到新的dataset
     parsed_dataset = dataset.map(map_func=_parse_data)
-    parsed_dataset = parsed_dataset.shuffle(buffer_size=1000).batch(parameter.BATCH_SIZE).repeat(count=parameter.MAX_EPOCH)
+    parsed_dataset = parsed_dataset.batch(1).repeat(1)  #batch_size只为1
     print("parsed_dataset:", parsed_dataset)
     # ----------------------------------------------------------------------------------------------
     iter_num=0      #迭代次数
     for parsed_record in parsed_dataset:            #一次一个mini_batch
-        with tf.GradientTape() as tape:
-            #准备数据
-            src_word=tf.sparse.to_dense(parsed_record[0])
-            src_len=parsed_record[1]
-            target_word_input=tf.sparse.to_dense(parsed_record[2])
-            target_word_output=tf.sparse.to_dense(parsed_record[3])
-            target_len=parsed_record[4]
-            # print("src_words:", src_word)
-            # print("src_len", src_len)
-            # print("target_word_input:", target_word_input)
-            # print("target_word_output:", target_word_output)
-            #print("target_word_input.shape[1]:",target_word_input.shape[1])
-            #print("target_len", parsed_record[4])
-            # print("\n\n")
+        #准备数据,这里只取源序列，忽略目标序列
+        src_word=tf.sparse.to_dense(parsed_record[0])
+        print("src_word:",src_word[0].numpy())
+        src_len=parsed_record[1]
+        #target_word_input=tf.sparse.to_dense(parsed_record[2])
+        #target_word_output=tf.sparse.to_dense(parsed_record[3])
+        #target_len=parsed_record[4]
 
-            #mini batch loss
-            loss=0
+        src_mask = tf.sequence_mask(lengths=src_len)
+        #print("src_mask:\n",src_mask)
 
-            src_mask = tf.sequence_mask(lengths=src_len)
-            #print("src_mask:\n",src_mask)
+        #encode
+        en_outputs, en_states = encoder(word_ids=src_word, mask=src_mask, training=False)
+        # print("en_outputs:\n",en_outputs)
+        # print("en_states:\n",en_states)
 
-            #encode
-            en_outputs, en_states = encoder(word_ids=src_word, mask=src_mask, training=True)
-            # print("en_outputs:\n",en_outputs)
-            # print("en_states:\n",en_states)
+        #decode
+        pre_states=en_states        #decoder的第一个state设置为encoder输出的那个states
 
-            pre_states=en_states        #decoder的第一个state设置为encoder输出的那个states
-            for time in range(target_word_input.shape[1]):
-                target_word_input_one_step = target_word_input[:, time]
-                target_word_input_one_step = tf.expand_dims(input=target_word_input_one_step, axis=-1)
-                #print("target_word_input_one_step:", target_word_input_one_step)
-                target_word_output_one_step=target_word_output[:,time]
-                #print("target_word_output_one_step:", target_word_output_one_step)
-                de_outputs,de_states,attention_weights=decoder(
-                    word_ids=target_word_input_one_step,
-                    pre_states=pre_states,
-                    encoder_outputs=en_outputs
-                )
-                loss+=loss_func(loss_obj=cce,real=target_word_output_one_step,pred=de_outputs)
-                pre_states=de_states    #重新赋值states
+        target_word_input_one_step=tf.expand_dims(input=[1],axis=0) #start flag <sos>
+        #print("target_word_input_one_step:", target_word_input_one_step)
 
-            #这里可以loss除以时间步
-            loss=loss/target_word_input.shape[1]
-            print("loss:",loss.numpy())
+        #receive result
+        predict_ids=[]
+        for time in range(MAX_TIME_TARGET):
+            de_outputs,de_states,attention_weights=decoder(
+                word_ids=target_word_input_one_step,
+                pre_states=pre_states,
+                encoder_outputs=en_outputs
+            )
+            #loss+=loss_func(loss_obj=cce,real=target_word_output_one_step,pred=de_outputs)
+            pre_states=de_states    #重新赋值states
 
-            #添加标量到summary
-            with file_writer.as_default():
-                tf.summary.scalar(name="loss",data=loss,step=iter_num)
-                file_writer.flush()
+            predict_id=tf.argmax(input=de_outputs[0]).numpy()
 
-            #optimize
-            variables=encoder.trainable_variables+decoder.trainable_variables
-            gradients=tape.gradient(target=loss,sources=variables)
-            optimizer.apply_gradients(zip(gradients,variables))
+            if predict_id==2:
+                break
+            result_ids.append(predict_id)
 
-        iter_num+=1
 
-        # save checkpoints every 2000 iterations
-        if iter_num % 2000 == 0:
-            checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
+def recover(src_ids,pred_ids,src_mapper,target_mapper):
+    '''
+    从id序列中恢复为文本
+    :param src_ids: 源单词id序列
+    :param pred_ids: 预测结果id序列
+    :param src_mapper: 源索引mapper
+    :param target_mapper: 预测索引mapper
+    :return:
+    '''
+    src_text=""
+    pred_text=""
 
-    file_writer.close()
+    for src_id in src_ids:
+        src_text+=src_mapper[src_id]+" "
+
+    for pred_id in pred_ids:
+        pred_text+=target_mapper[pred_id]+" "
+
+    print("src_text:",src_text)
+    print("pred_text:",pred_text)
+    print("\n\n")
+
 
 
 if __name__=="__main__":

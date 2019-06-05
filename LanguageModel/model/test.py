@@ -32,12 +32,12 @@ def test(tfrecords_file_list):
     :return:
     '''
     model=lstm.LSTM_Model()
-    
+
     #optimizer = tf.keras.optimizers.Adam(parameter.LEARNING_RATE)
     cce = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     checkpoint=tf.train.Checkpoint(model=model)
 
-    checkpoint.restore(save_path=parameter.CHECKPOINT_PATH+"-2")
+    checkpoint.restore(save_path=parameter.CHECKPOINT_PATH+"-1")
 
 
     # ----------------------------------------data set API-----------------------------------------
