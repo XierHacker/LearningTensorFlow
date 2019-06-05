@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-MODE="train"
+MODE="test"
 
 IN_FILE="../ptb_corpus/ptb."+MODE+".txt"
 OUT_FILE="./"+MODE+".tfrecords"
 
-write=False
+write=True
 
 def getWordsMapper(IndexFile):
     df_words_ids = pd.read_csv(filepath_or_buffer=IndexFile, encoding="utf-8")

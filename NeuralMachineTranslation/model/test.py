@@ -31,6 +31,15 @@ def _parse_data(example_proto):
     target_len=tf.cast(x=parsed_features["target_len"],dtype=tf.int32)
     return src_word,src_len,target_word_input,target_word_output,target_len
 
+def getWordsMapper(IndexFile):
+    df_words_ids = pd.read_csv(filepath_or_buffer=IndexFile, encoding="utf-8")
+    words2id = pd.Series(data=df_words_ids["id"].values, index=df_words_ids["word"].values)
+    id2words = pd.Series(data=df_words_ids["word"].values, index=df_words_ids["id"].values)
+    # print("word2id:\n",words2id)
+    # print("id2words:\n",id2words)
+    # print("words2id.shape",words2id.shape)
+    return words2id,id2words
+
 
 def loss_func(loss_obj,real,pred):
     '''
