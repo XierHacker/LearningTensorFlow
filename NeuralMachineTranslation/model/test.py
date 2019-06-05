@@ -96,7 +96,7 @@ def test(tfrecords_file_list):
         from_logits=True,
         reduction=tf.keras.losses.Reduction.NONE
     )
-    checkpoint = tf.train.Checkpoint(encoder=encoder, decoder=decoder)
+    checkpoint = tf.train.Checkpoint(optimizer=optimizer,encoder=encoder, decoder=decoder)
 
     #restore
     checkpoint.restore(save_path=parameter.CHECKPOINT_PATH+"-1")
