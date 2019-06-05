@@ -114,7 +114,7 @@ def test(tfrecords_file_list):
     for parsed_record in parsed_dataset:            #一次一个mini_batch
         #准备数据,这里只取源序列，忽略目标序列
         src_word=tf.sparse.to_dense(parsed_record[0])
-        print("src_word:",src_word[0].numpy())
+        #print("src_word:",src_word[0].numpy())
         src_len=parsed_record[1]
         #target_word_input=tf.sparse.to_dense(parsed_record[2])
         #target_word_output=tf.sparse.to_dense(parsed_record[3])
@@ -149,7 +149,8 @@ def test(tfrecords_file_list):
 
             if predict_id==2:
                 break
-            result_ids.append(predict_id)
+            predict_ids.append(predict_id)
+        recover(src_ids=src_word[0].numpy(),pred_ids=predict_ids,src_mapper=id2words_zh,target_mapper=id2words_en)
 
 
 def recover(src_ids,pred_ids,src_mapper,target_mapper):
