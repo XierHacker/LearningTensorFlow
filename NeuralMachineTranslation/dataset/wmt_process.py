@@ -6,7 +6,7 @@ IN_FILE_ZH="../wmt_corpus/processed.zh"
 IN_FILE_EN="../wmt_corpus/processed.en"
 OUT_FILE="wmt_train.tfrecords"
 
-write=False
+write=True
 
 def getWordsMapper(IndexFile):
     df_words_ids = pd.read_csv(filepath_or_buffer=IndexFile, encoding="utf-8")

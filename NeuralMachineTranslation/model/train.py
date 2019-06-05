@@ -139,13 +139,12 @@ def train(tfrecords_file_list):
 
             #这里可以loss除以时间步
             loss=loss/target_word_input.shape[1]
-            print("loss:",loss)
+            print("loss:",loss.numpy())
 
             #添加标量到summary
             with file_writer.as_default():
                 tf.summary.scalar(name="loss",data=loss,step=iter_num)
                 file_writer.flush()
-
 
             #optimize
             variables=encoder.trainable_variables+decoder.trainable_variables
@@ -153,6 +152,11 @@ def train(tfrecords_file_list):
             optimizer.apply_gradients(zip(gradients,variables))
 
         iter_num+=1
+
+        # save checkpoints every 2000 iterations
+        if iter_num % 2000 == 0:
+            checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
+
     file_writer.close()
 
 

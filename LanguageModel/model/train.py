@@ -49,6 +49,7 @@ def train(tfrecords_file_list):
     parsed_dataset = parsed_dataset.shuffle(buffer_size=1000).batch(parameter.BATCH_SIZE).repeat(count=parameter.MAX_EPOCH)
     print("parsed_dataset:", parsed_dataset)
     # ----------------------------------------------------------------------------------------------
+    iter_num=0
     for parsed_record in parsed_dataset:
         with tf.GradientTape() as tape:
             seq_len = parsed_record[2]
@@ -78,6 +79,15 @@ def train(tfrecords_file_list):
             # print("gradient:",gradient)
             # 应用梯度
             optimizer.apply_gradients(zip(gradient, model.trainable_variables))
+
+        iter_num+=1
+
+        #save checkpoints every 200 iterations
+        if iter_num%200==0:
+            checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
+
+
+
 
 if __name__=="__main__":
     train(tfrecords_file_list=parameter.TRAIN_FILE_LIST)
