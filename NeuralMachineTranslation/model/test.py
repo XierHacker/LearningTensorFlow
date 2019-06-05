@@ -3,6 +3,9 @@ import tensorflow as tf
 import model
 import parameter
 
+MAX_TIME_TARGET=80
+
+
 def _parse_data(example_proto):
     '''
     定义tfrecords解析和预处理函数
@@ -61,6 +64,7 @@ def test(tfrecords_file_list):
     :param file_list:
     :return:
     '''
+
     encoder=model.Encoder(
         vocab_size=parameter.SRC_VOCAB_SIZE,
         embeddings_dim=parameter.EMBEDDINGS_DIM,

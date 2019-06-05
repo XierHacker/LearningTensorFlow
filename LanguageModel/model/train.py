@@ -32,10 +32,6 @@ def train(tfrecords_file_list):
     :return:
     '''
     model=lstm.LSTM_Model()
-    word_embeddings=tf.Variable(
-        initial_value=tf.random.truncated_normal(shape=(parameter.VOCAB_SIZE,parameter.EMBEDDINGS_DIM)),
-        trainable=True
-    )
     optimizer = tf.keras.optimizers.Adam(parameter.LEARNING_RATE)
     cce = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
     checkpoint=tf.train.Checkpoint(model=model)
@@ -63,7 +59,7 @@ def train(tfrecords_file_list):
             label_onehot_masked=tf.boolean_mask(tensor=label_onehot,mask=mask,axis=0)
             #print("label_onehot_masked.shape:\n",label_onehot_masked.shape)
 
-            logits=model(word_ids=word_dense,embeddings=word_embeddings,mask=mask,training=True)
+            logits=model(word_ids=word_dense,mask=mask,training=True)
             #print("logits.shape:\n",logits)
 
             logits_masked=tf.boolean_mask(tensor=logits,mask=mask,axis=0)
@@ -83,7 +79,7 @@ def train(tfrecords_file_list):
         iter_num+=1
 
         #save checkpoints every 200 iterations
-        if iter_num%200==0:
+        if iter_num%500==0:
             checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
 
 
