@@ -99,7 +99,7 @@ def test(tfrecords_file_list):
     checkpoint = tf.train.Checkpoint(encoder=encoder, decoder=decoder)
 
     #restore
-    checkpoint.restore(save_path=parameter.CHECKPOINT_PATH)+"-1"
+    checkpoint.restore(save_path=parameter.CHECKPOINT_PATH+"-1")
 
     # ----------------------------------------data set API-----------------------------------------
     # 创建dataset对象
