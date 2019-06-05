@@ -19,6 +19,7 @@ def _parse_data(example_proto):
             "target_len":tf.io.FixedLenFeature(shape=[], dtype=tf.int64)
         }
     )
+
     #变长Feature会被处理为SparseTensor
     src_word=tf.cast(x=parsed_features["src_word"],dtype=tf.int32)
     src_len = tf.cast(x=parsed_features["src_len"], dtype=tf.int32)
