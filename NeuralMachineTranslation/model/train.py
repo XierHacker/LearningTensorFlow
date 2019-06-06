@@ -71,7 +71,7 @@ def train(tfrecords_file_list):
     decoder=model.Decoder(
         vocab_size=parameter.TARGET_VOCAB_SIZE,
         embeddings_dim=parameter.EMBEDDINGS_DIM,
-        units=1024,
+        units=512,
         batch_size=parameter.BATCH_SIZE
     )
 

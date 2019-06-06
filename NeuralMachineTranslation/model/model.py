@@ -9,10 +9,12 @@ class Encoder(tf.keras.Model):
             trainable=True
         )
         self.bigru_1=tf.keras.layers.Bidirectional(
-            layer=tf.keras.layers.GRU(units=units,return_sequences=True,return_state=False)
+            layer=tf.keras.layers.GRU(units=units,return_sequences=True,return_state=False),
+            merge_mode="sum"
         )
         self.bigru_2 = tf.keras.layers.Bidirectional(
-            layer=tf.keras.layers.GRU(units=units, return_sequences=True, return_state=True)
+            layer=tf.keras.layers.GRU(units=units, return_sequences=True, return_state=True),
+            merge_mode = "sum"
         )
 
 
@@ -20,9 +22,9 @@ class Encoder(tf.keras.Model):
         inputs=tf.nn.embedding_lookup(params=self.word_embeddings,ids=word_ids)
         outputs=self.bigru_1(inputs=inputs,mask=mask,training=training)
         outputs,states_f,states_b=self.bigru_2(inputs=outputs,mask=mask,training=training)
-        states=tf.concat(values=(states_f,states_b),axis=-1)
-        # print("encoder outputs:\n",outputs)
-        # print("encoder state:\n",states)
+        states=states_f+states_b
+        print("encoder outputs:\n",outputs)
+        print("encoder state:\n",states)
         return outputs,states
 
 
