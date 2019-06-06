@@ -23,8 +23,8 @@ class Encoder(tf.keras.Model):
         outputs=self.bigru_1(inputs=inputs,mask=mask,training=training)
         outputs,states_f,states_b=self.bigru_2(inputs=outputs,mask=mask,training=training)
         states=states_f+states_b
-        print("encoder outputs:\n",outputs)
-        print("encoder state:\n",states)
+        #print("encoder outputs:\n",outputs)
+        #print("encoder state:\n",states)
         return outputs,states
 
 
