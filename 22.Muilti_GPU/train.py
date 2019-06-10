@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 
 import model
 
+
+DEVICES_LIST=["gpu:4","gpu:5","gpu:6"]
+
+
 print(tf.__version__)
 
 (x_train, y_train), (x_test, y_test)=tf.keras.datasets.fashion_mnist.load_data()
@@ -25,7 +29,7 @@ def train_step():
     pass
 
 def train():
-    strategy=tf.distribute.MirroredStrategy()
+    strategy=tf.distribute.MirroredStrategy(devices=DEVICES_LIST)
     print("num devices:",strategy.num_replicas_in_sync)
     
 
