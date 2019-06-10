@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import model
 
 
-DEVICES_LIST=["gpu:4","gpu:5","gpu:6"]
+# DEVICES_LIST=["gpu:4","gpu:5","gpu:6"]
 #parameters
 BATCH_SIZE=2
 CLASS_NUM=10
@@ -40,7 +40,7 @@ def train_step():
     pass
 
 def train():
-    strategy=tf.distribute.MirroredStrategy(devices=DEVICES_LIST)
+    strategy=tf.distribute.MirroredStrategy()
     print("num devices:",strategy.num_replicas_in_sync)
     with strategy.scope():
         train_dist_dataset=strategy.experimental_distribute_dataset(train_dataset)
