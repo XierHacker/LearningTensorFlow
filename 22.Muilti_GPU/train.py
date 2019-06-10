@@ -6,9 +6,16 @@ import matplotlib.pyplot as plt
 import model
 
 
-# DEVICES_LIST=["gpu:4","gpu:5","gpu:6"]
+#define strategy
+strategy=tf.distribute.MirroredStrategy()
+print("num devices:",strategy.num_replicas_in_sync)
+
 #parameters
-BATCH_SIZE=2
+BATCH_SIZE_PER_REPLLICA=4
+BATCH_SIZE=BATCH_SIZE_PER_REPLLICA*strategy.num_replicas_in_sync
+print("batch_size_per_replica:",BATCH_SIZE_PER_REPLLICA)
+print("batch_size:",BATCH_SIZE)
+
 CLASS_NUM=10
 EPOCHS=10
 
@@ -40,8 +47,6 @@ def train_step():
     pass
 
 def train():
-    strategy=tf.distribute.MirroredStrategy()
-    print("num devices:",strategy.num_replicas_in_sync)
     with strategy.scope():
         train_dist_dataset=strategy.experimental_distribute_dataset(train_dataset)
         for records in train_dist_dataset:
