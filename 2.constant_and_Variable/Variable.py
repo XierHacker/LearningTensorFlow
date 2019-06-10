@@ -43,7 +43,7 @@ def assin_value_test():
     print("a:\n", a)
 
 
-
+    #tf.keras.layers.Conv1D()
 if __name__=="__main__":
     basic_test()
     index_test()
