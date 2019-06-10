@@ -25,9 +25,12 @@ def train_step():
     pass
 
 def train():
-    pass
+    strategy=tf.distribute.MirroredStrategy()
+    print("num devices:",strategy.num_replicas_in_sync)
+    
 
 
 
 if __name__=="__main__":
-    pass
+    train()
+
