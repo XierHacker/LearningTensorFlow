@@ -37,7 +37,7 @@ train_dataset=tf.data.Dataset.from_tensor_slices((x_train,y_train)).batch(BATCH_
     
 
 x_test=np.expand_dims(a=x_test,axis=-1)/np.float32(255)
-test_dataset=tf.data.Dataset.from_tensor_slices((x_test,y_test))
+test_dataset=tf.data.Dataset.from_tensor_slices((x_test,y_test)).batch(BATCH_SIZE)
 
 #
 # plt.imshow(X=x_train[1,:,:,0])
@@ -55,7 +55,7 @@ def train():
 
     #define loss
     with strategy.scope():
-        SCC=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True,reduction=tf.keras.losses.Reduction.None)
+        SCC=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True,reduction=tf.keras.losses.Reduction.NONE)
         def compute_loss(labels,predictions):
             device_losses=SCC(labels,predictions)
             print("device_loss")
