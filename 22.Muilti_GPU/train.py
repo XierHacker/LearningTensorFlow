@@ -11,7 +11,7 @@ strategy=tf.distribute.MirroredStrategy()
 print("num devices:",strategy.num_replicas_in_sync)
 
 #parameters
-BATCH_SIZE_PER_REPLICA=4
+BATCH_SIZE_PER_REPLICA=64
 BATCH_SIZE=BATCH_SIZE_PER_REPLICA*strategy.num_replicas_in_sync
 print("batch_size_per_replica:",BATCH_SIZE_PER_REPLICA)
 print("batch_size:",BATCH_SIZE)
@@ -63,6 +63,10 @@ def train():
             return device_loss
     
     #define metrics
+    with strategy.scope():
+        train_accuracy=tf.keras.metrics.SparseCategoricalAccuracy(name="train_loss")
+
+        
 
     # model and optimizer must be created under `strategy.scope`.
     with strategy.scope():
@@ -81,16 +85,19 @@ def train():
             
             gradients=tape.gradient(target=loss,sources=cnn.trainable_variables)
             optimizer.apply_gradients(zip(gradients,cnn.trainable_variables))
+
+            train_accuracy.update_state(y,logits)
             return loss
     
     #distribute train_step use basic train step
     with strategy.scope():
         def dist_train_step(dataset_inputs):
             replica_losses=strategy.experimental_run_v2(fn=train_step,args=(dataset_inputs,))
-            #print("replica_losses:\n",replica_losses)
+            print("replica_losses:\n",replica_losses)
             return strategy.reduce(reduce_op=tf.distribute.ReduceOp.SUM,value=replica_losses,axis=None)
 
     for epoch in range(EPOCHS):
+        print("-----------EPOCH:",epoch)
         epoch_loss=0.0
         num_batchs=0
         for records in train_dist_dataset:
@@ -98,8 +105,14 @@ def train():
             num_batchs+=1
         epoch_loss=epoch_loss/num_batchs
 
-        print("epoch_loss:",epoch_loss)
+        print("epoch_loss:",epoch_loss.numpy())
+        print("epoch_accuracy:",train_accuracy.result())
 
+        #reset states
+        train_accuracy.reset_states()
+
+        #save model
+        checkpoint.save(CHECK_POINTS_PATH)
 
 
 
