@@ -30,7 +30,8 @@ print(tf.__version__)
 
 #expand dim to use convlution 2D
 x_train=np.expand_dims(a=x_train,axis=-1)/np.float32(255)
-train_dataset=tf.data.Dataset.from_tensor_slices((x_train,y_train)).batch(BATCH_SIZE)
+print("train sample size:",len(x_train))
+train_dataset=tf.data.Dataset.from_tensor_slices((x_train,y_train)).shuffle(buffer_size=len(x_train)).batch(BATCH_SIZE)
 # for records in train_dataset:
 #     print("records:\n",records[0])
 #     print("records:\n",records[1])
@@ -106,7 +107,7 @@ def train():
             epoch_loss=epoch_loss/num_batchs
 
             print("epoch_loss:",epoch_loss.numpy())
-            print("epoch_accuracy:",train_accuracy.result())
+            print("epoch_accuracy:",train_accuracy.result().numpy())
 
             #reset states
             train_accuracy.reset_states()
