@@ -93,26 +93,26 @@ def train():
     with strategy.scope():
         def dist_train_step(dataset_inputs):
             replica_losses=strategy.experimental_run_v2(fn=train_step,args=(dataset_inputs,))
-            print("replica_losses:\n",replica_losses)
+            #print("replica_losses:\n",replica_losses)
             return strategy.reduce(reduce_op=tf.distribute.ReduceOp.SUM,value=replica_losses,axis=None)
 
-    for epoch in range(EPOCHS):
-        print("-----------EPOCH:",epoch)
-        epoch_loss=0.0
-        num_batchs=0
-        for records in train_dist_dataset:
-            epoch_loss+=dist_train_step(records)
-            num_batchs+=1
-        epoch_loss=epoch_loss/num_batchs
+        for epoch in range(EPOCHS):
+            print("-----------EPOCH:",epoch)
+            epoch_loss=0.0
+            num_batchs=0
+            for records in train_dist_dataset:
+                epoch_loss+=dist_train_step(records)
+                num_batchs+=1
+            epoch_loss=epoch_loss/num_batchs
 
-        print("epoch_loss:",epoch_loss.numpy())
-        print("epoch_accuracy:",train_accuracy.result())
+            print("epoch_loss:",epoch_loss.numpy())
+            print("epoch_accuracy:",train_accuracy.result())
 
-        #reset states
-        train_accuracy.reset_states()
+            #reset states
+            train_accuracy.reset_states()
 
-        #save model
-        checkpoint.save(CHECK_POINTS_PATH)
+            #save model
+            checkpoint.save(CHECK_POINTS_PATH)
 
 
 
