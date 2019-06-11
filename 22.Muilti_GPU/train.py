@@ -58,7 +58,7 @@ def train():
         SCC=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True,reduction=tf.keras.losses.Reduction.NONE)
         def compute_loss(labels,predictions):
             device_losses=SCC(labels,predictions)
-            print("device_loss")
+            #print("device_loss")
             device_loss=tf.nn.compute_average_loss(per_example_loss=device_losses,global_batch_size=BATCH_SIZE)
             return device_loss
     
@@ -87,7 +87,7 @@ def train():
     with strategy.scope():
         def dist_train_step(dataset_inputs):
             replica_losses=strategy.experimental_run_v2(fn=train_step,args=(dataset_inputs,))
-            print("replica_losses:\n",replica_losses)
+            #print("replica_losses:\n",replica_losses)
             return strategy.reduce(reduce_op=tf.distribute.ReduceOp.SUM,value=replica_losses,axis=None)
 
     for epoch in range(EPOCHS):
