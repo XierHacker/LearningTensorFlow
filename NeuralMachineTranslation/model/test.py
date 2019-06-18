@@ -80,14 +80,14 @@ def test(tfrecords_file_list):
     encoder=model.Encoder(
         vocab_size=parameter.SRC_VOCAB_SIZE,
         embeddings_dim=parameter.EMBEDDINGS_DIM,
-        units=128,
+        units=512,
         batch_size=parameter.BATCH_SIZE
     )
 
     decoder=model.Decoder(
         vocab_size=parameter.TARGET_VOCAB_SIZE,
         embeddings_dim=parameter.EMBEDDINGS_DIM,
-        units=128,
+        units=512,
         batch_size=parameter.BATCH_SIZE
     )
 
