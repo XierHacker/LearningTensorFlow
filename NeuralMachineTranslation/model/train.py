@@ -90,75 +90,73 @@ def train(tfrecords_file_list):
     dataset = tf.data.TFRecordDataset(filenames=tfrecords_file_list)
     print("dataset:", dataset)
     # 使用map处理得到新的dataset
-    parsed_dataset = dataset.map(map_func=_parse_data)
-    parsed_dataset = parsed_dataset.shuffle(buffer_size=1000).batch(parameter.BATCH_SIZE).repeat(count=parameter.MAX_EPOCH)
+    parsed_dataset = dataset.map(map_func=_parse_data,num_parallel_calls=4)
+    parsed_dataset = parsed_dataset.shuffle(buffer_size=203352).batch(parameter.BATCH_SIZE)
     print("parsed_dataset:", parsed_dataset)
     # ----------------------------------------------------------------------------------------------
     iter_num=0      #迭代次数
-    for parsed_record in parsed_dataset:            #一次一个mini_batch
-        with tf.GradientTape() as tape:
-            #准备数据
-            src_word=tf.sparse.to_dense(parsed_record[0])
-            src_len=parsed_record[1]
-            target_word_input=tf.sparse.to_dense(parsed_record[2])
-            target_word_output=tf.sparse.to_dense(parsed_record[3])
-            target_len=parsed_record[4]
-            # print("src_words:", src_word)
-            # print("src_len", src_len)
-            # print("target_word_input:", target_word_input)
-            # print("target_word_output:", target_word_output)
-            #print("target_word_input.shape[1]:",target_word_input.shape[1])
-            #print("target_len", parsed_record[4])
-            # print("\n\n")
+    for epoch in range(parameter.MAX_EPOCH):
+        print("EPOCH:",epoch)
+        for parsed_record in parsed_dataset:            #一次一个mini_batch
+            with tf.GradientTape() as tape:
+                #准备数据
+                src_word=tf.sparse.to_dense(parsed_record[0])
+                src_len=parsed_record[1]
+                target_word_input=tf.sparse.to_dense(parsed_record[2])
+                target_word_output=tf.sparse.to_dense(parsed_record[3])
+                target_len=parsed_record[4]
+                # print("src_words:", src_word)
+                # print("src_len", src_len)
+                # print("target_word_input:", target_word_input)
+                # print("target_word_output:", target_word_output)
+                #print("target_word_input.shape[1]:",target_word_input.shape[1])
+                #print("target_len", parsed_record[4])
+                # print("\n\n")
 
-            #mini batch loss
-            loss=0
+                #mini batch loss
+                loss=0
+                src_mask = tf.sequence_mask(lengths=src_len)
+                #print("src_mask:\n",src_mask)
+                #encode
+                en_outputs, en_states = encoder(word_ids=src_word, mask=src_mask, training=True)
+                # print("en_outputs:\n",en_outputs)
+                # print("en_states:\n",en_states)
+                pre_states=en_states        #decoder的第一个state设置为encoder输出的那个states
+                for time in range(target_word_input.shape[1]):
+                    target_word_input_one_step = target_word_input[:, time]
+                    target_word_input_one_step = tf.expand_dims(input=target_word_input_one_step, axis=-1)
+                    #print("target_word_input_one_step:", target_word_input_one_step)
+                    target_word_output_one_step=target_word_output[:,time]
+                    #print("target_word_output_one_step:", target_word_output_one_step)
+                    de_outputs,de_states,attention_weights=decoder(
+                        word_ids=target_word_input_one_step,
+                        pre_states=pre_states,
+                        encoder_outputs=en_outputs
+                    )
+                    loss+=loss_func(loss_obj=cce,real=target_word_output_one_step,pred=de_outputs)
+                    pre_states=de_states    #重新赋值states
 
-            src_mask = tf.sequence_mask(lengths=src_len)
-            #print("src_mask:\n",src_mask)
+                #这里可以loss除以时间步
+                loss=loss/target_word_input.shape[1]
+                print("loss:",loss.numpy())
 
-            #encode
-            en_outputs, en_states = encoder(word_ids=src_word, mask=src_mask, training=True)
-            # print("en_outputs:\n",en_outputs)
-            # print("en_states:\n",en_states)
+                #添加标量到summary
+                with file_writer.as_default():
+                    tf.summary.scalar(name="loss",data=loss,step=iter_num)
+                    file_writer.flush()
 
-            pre_states=en_states        #decoder的第一个state设置为encoder输出的那个states
-            for time in range(target_word_input.shape[1]):
-                target_word_input_one_step = target_word_input[:, time]
-                target_word_input_one_step = tf.expand_dims(input=target_word_input_one_step, axis=-1)
-                #print("target_word_input_one_step:", target_word_input_one_step)
-                target_word_output_one_step=target_word_output[:,time]
-                #print("target_word_output_one_step:", target_word_output_one_step)
-                de_outputs,de_states,attention_weights=decoder(
-                    word_ids=target_word_input_one_step,
-                    pre_states=pre_states,
-                    encoder_outputs=en_outputs
-                )
-                loss+=loss_func(loss_obj=cce,real=target_word_output_one_step,pred=de_outputs)
-                pre_states=de_states    #重新赋值states
+                #optimize
+                variables=encoder.trainable_variables+decoder.trainable_variables
+                gradients=tape.gradient(target=loss,sources=variables)
+                optimizer.apply_gradients(zip(gradients,variables))
 
-            #这里可以loss除以时间步
-            loss=loss/target_word_input.shape[1]
-            print("loss:",loss.numpy())
+            iter_num+=1
 
-            #添加标量到summary
-            with file_writer.as_default():
-                tf.summary.scalar(name="loss",data=loss,step=iter_num)
-                file_writer.flush()
-
-            #optimize
-            variables=encoder.trainable_variables+decoder.trainable_variables
-            gradients=tape.gradient(target=loss,sources=variables)
-            optimizer.apply_gradients(zip(gradients,variables))
-
-        iter_num+=1
-
-        # save checkpoints every 2000 iterations
-        if iter_num % 2000 == 0:
-            checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
+            # save checkpoints every 3000 iterations
+            if iter_num % 3000 == 0:
+                checkpoint.save(file_prefix=parameter.CHECKPOINT_PATH)
 
     file_writer.close()
-
 
 if __name__=="__main__":
     train(tfrecords_file_list=parameter.TRAIN_FILE_LIST)

@@ -31,7 +31,7 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
     keep=True           #是否保留这句话，要是出现错误，Keep设置为False
     src_index=[]
     target_index_inputs=[]
-    target_index_inputs.append(target_mapper["<sos>"])     #在开始添加开始"<sos>"标记
+    target_index_inputs.append(target_mapper["<sos>"])     #在开始添加"<sos>"标记
     target_index_outputs=[]
     seq_len_src=0
     seq_len_target=0
@@ -40,8 +40,8 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
         if word in src_mapper.keys():
             src_index.append(src_mapper[word])
         else:
-            print("src word:", word)
-            print("src word list:", src_word_list)
+            # print("src word:", word)
+            # print("src word list:", src_word_list)
             src_index.append(src_mapper["<unk>"])
 
     # print("src_index:",src_index)
@@ -52,8 +52,8 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
             target_index_inputs.append(target_mapper[word])
             target_index_outputs.append(target_mapper[word])
         else:
-            print("target word:",word)
-            print("target word list:",target_word_list)
+            # print("target word:",word)
+            # print("target word list:",target_word_list)
             target_index_inputs.append(target_mapper["<unk>"])
             target_index_outputs.append(target_mapper["<unk>"])
     target_index_outputs.append(target_mapper["<eos>"])     #在末尾添加结束"<eos>"标记
@@ -95,13 +95,14 @@ def preprocess(infile_zh,infile_en,outfile):
         print("wrong!!1")
         return None
 
+    total=0
     for i in range(len(lines_zh)):
         line_zh=lines_zh[i].strip()
         line_en=lines_en[i].strip()
         # 丢掉所有空句子
         if line_zh == "" or line_en == "":
-            print("line_zh:", line_zh)
-            print("line_en:", line_en)
+            # print("line_zh:", line_zh)
+            # print("line_en:", line_en)
             continue
         #丢掉所有<开头的句子
         if line_zh[0]=="<":
@@ -136,9 +137,11 @@ def preprocess(infile_zh,infile_en,outfile):
             )
         )
         writer.write(record=example.SerializeToString())
+        total+=1
     writer.close()
     file_zh.close()
     file_en.close()
+    print("total_size:",total)
 
 
 
