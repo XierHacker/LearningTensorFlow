@@ -20,16 +20,16 @@ def generate(file_list,out_file):
                     counter[word]+=1
     #print("counter:\n",counter)
     #print("counter size:",len(counter))
-    #counter.pop("<unk>")
-    #print("counter:\n", counter)
-    #print("counter size:", len(counter))
+    most_common=counter.most_common(30000)
+    #print("most_common:\n",most_common)
+    most_common_word=[t[0] for t in most_common]
+    #print("most_common_word:\n",most_common_word)
 
-    all_word=EXTRA_CHARS+list(counter.keys())
+    all_word=EXTRA_CHARS+most_common_word
     print("all_word:", len(all_word))
     ids=[i for i in range(1,len(all_word)+1)]
-    #print("ids:",ids)
-    pd.DataFrame(data={"id": ids, "word": all_word}). \
-         to_csv(path_or_buf=out_file, index=False, encoding="utf_8")
+    # #print("ids:",ids)
+    pd.DataFrame(data={"id": ids, "word": all_word}).to_csv(path_or_buf=out_file, index=False, encoding="utf_8")
 
 if __name__=="__main__":
     generate(file_list=IN_FILE_LIST,out_file=OUT_FILE)
