@@ -5,6 +5,7 @@ import pandas as pd
 OUT_FILE="../index_files/en_ids.csv"
 IN_FILE_LIST=["../wmt_corpus/processed.en"]
 EXTRA_CHARS=["<sos>","<eos>","<unk>"]
+VOCAB_SIZE=20000
 
 def generate(file_list,out_file):
     counter=Counter()
@@ -20,7 +21,7 @@ def generate(file_list,out_file):
                     counter[word]+=1
     #print("counter:\n",counter)
     #print("counter size:",len(counter))
-    most_common=counter.most_common(30000)
+    most_common=counter.most_common(VOCAB_SIZE)
     #print("most_common:\n",most_common)
     most_common_word=[t[0] for t in most_common]
     #print("most_common_word:\n",most_common_word)
