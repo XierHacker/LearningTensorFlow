@@ -5,7 +5,7 @@ import pandas as pd
 OUT_FILE="../index_files/en_ids.csv"
 IN_FILE_LIST=["../wmt_corpus/processed.en"]
 EXTRA_CHARS=["<sos>","<eos>","<unk>"]
-VOCAB_SIZE=20000
+VOCAB_SIZE=10000
 
 def generate(file_list,out_file):
     counter=Counter()
