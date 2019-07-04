@@ -6,7 +6,7 @@ IN_FILE_ZH="../wmt_corpus/processed.zh"
 IN_FILE_EN="../wmt_corpus/processed.en"
 OUT_FILE="wmt_train.tfrecords"
 
-write=True
+write=False
 
 def getWordsMapper(IndexFile):
     df_words_ids = pd.read_csv(filepath_or_buffer=IndexFile, encoding="utf-8")
@@ -30,11 +30,10 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
     '''
     keep=True           #是否保留这句话，要是出现错误，Keep设置为False
     src_index=[]
+    src_index.append(src_mapper["<sos>"])                  #在开始添加"<sos>"标记
     target_index_inputs=[]
     target_index_inputs.append(target_mapper["<sos>"])     #在开始添加"<sos>"标记
     target_index_outputs=[]
-    seq_len_src=0
-    seq_len_target=0
     #handle src word list
     for word in src_word_list:
         if word in src_mapper.keys():
@@ -43,7 +42,7 @@ def index(src_word_list,target_word_list,src_mapper,target_mapper):
             # print("src word:", word)
             # print("src word list:", src_word_list)
             src_index.append(src_mapper["<unk>"])
-
+    src_index.append(src_mapper["<eos>"])                  #在末尾添加结束"<eos>"标记
     # print("src_index:",src_index)
 
     # handle target word list
