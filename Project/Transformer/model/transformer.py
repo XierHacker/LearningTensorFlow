@@ -33,14 +33,12 @@ def scaled_dot_product_attention(q, k, v, mask):
         k, v must have matching penultimate dimension, i.e.: seq_len_k = seq_len_v.
         The mask has different shapes depending on its type(padding or look ahead) 
         but it must be broadcastable for addition.
-  
         Args:
             q: query shape == (..., seq_len_q, depth)
             k: key shape == (..., seq_len_k, depth)
             v: value shape == (..., seq_len_v, depth_v)
             mask: Float tensor with shape broadcastable 
                 to (..., seq_len_q, seq_len_k). Defaults to None.
-    
         Returns:
             output, attention_weights
     '''
@@ -211,14 +209,91 @@ class TransformerDecoderBlock(tf.keras.layers.Layer):
 
 
 
+class TransformerEncoder(tf.keras.layers.Layer):
+    def __init__(self,num_blocks,d_model,num_heads,dff,vocab_size,dropout_rate=0.1):
+        super(TransformerEncoder,self).__init__()
+        self.num_blocks=num_blocks
+        self.d_model=d_model
+
+        #embeddings
+        self.embeddings=tf.keras.layers.Embedding(vocab_size,self.d_model)
+        #positional encoding
+        self.pos_encoding=positional_encoding(max_pos=vocab_size,d_model=self.d_model)
+        #encoder blocks
+        self.enc_blocks=[TransformerEncoderBlock(self.d_model,num_heads,dff,dropout_rate) for _ in range(num_blocks)]
+        #dropout
+        self.dropout=tf.keras.layers.Dropout(rate=dropout_rate)
+    
+    def __call__(self,seq,mask,training):
+        seq_len=tf.shape(seq)[1]
+
+        #embed
+        embed=self.embeddings(seq)          # (batch_size, input_seq_len, d_model)
+        embed *= tf.math.sqrt(tf.cast(self.d_model, tf.float32))
+        embed+=self.pos_encoding[:,:seq_len,:]
+    
+        x=self.dropout(embed,training=training)
+        for i in range(self.num_blocks):
+            x=self.enc_blocks[i](x,mask,training)
+        return x
+
+
+class TransformerDecoder(tf.keras.layers.Layer):
+    def __init__(self, num_blocks,d_model,num_heads,dff,vocab_size,dropout_rate=0.1):
+        super(TransformerDecoder,self).__init__()
+        self.num_blocks=num_blocks
+        self.d_model=d_model
+        #embeddings
+        self.embeddings=tf.keras.layers.Embedding(vocab_size,self.d_model)
+        #positional encoding
+        self.pos_encoding=positional_encoding(max_pos=vocab_size,d_model=self.d_model)
+        #decoder blocks
+        self.dec_blocks=[TransformerDecoderBlock(d_model,num_heads,dff,dropout_rate) for _ in range(num_blocks)]
+        #dropout
+        self.dropout=tf.keras.layers.Dropout(rate=dropout_rate)
+        
+        
+    def __call__(self,seq,enc_output,look_ahead_mask,padding_mask,training):
+        seq_len=tf.shape(seq)[1]
+        attention_weights={}
+
+        #embed
+        embed=self.embeddings(seq)          # (batch_size, input_seq_len, d_model)
+        embed *= tf.math.sqrt(tf.cast(self.d_model, tf.float32))
+        embed+=self.pos_encoding[:,:seq_len,:]
+
+        x=self.dropout(embed,training=training)
+
+        for i in range(self.num_blocks):
+            x,block1,block2=self.dec_blocks[i](x,enc_output,look_ahead_mask,padding_mask,training)
+            attention_weights['decoder_layer{}_block1'.format(i+1)] = block1
+            attention_weights['decoder_layer{}_block2'.format(i+1)] = block2
+        # x.shape == (batch_size, target_seq_len, d_model)
+        return x,attention_weights
+
+class Transformer(tf.keras.Model):
+    def __init__(self,num_blocks,d_model, num_heads, dff, input_vocab_size, target_vocab_size, dropout_rate=0.1):
+        super(Transformer,self).__init__()
+        #encoder
+        self.encoder=TransformerEncoder(num_blocks,d_model,num_heads,dff,input_vocab_size,dropout_rate)
+        #decoder
+        self.decoder=TransformerDecoder(num_blocks,d_model,num_heads,dff,target_vocab_size,dropout_rate)
+        #linear
+        self.final_layer=tf.keras.layers.Dense(target_vocab_size)
+
+
+    def __call__(self,src_seq,tar_seq,enc_padding_mask, look_ahead_mask, dec_padding_mask,training):
+        #encoder output
+        enc_output=self.encoder(src_seq,enc_padding_mask,training)
+        #decoder output, dec_output.shape == (batch_size, tar_seq_len, d_model)
+        dec_output,attention_weights=self.decoder(tar_seq,enc_output,look_ahead_mask,dec_padding_mask,training)
+        #final output,(batch_size, tar_seq_len, target_vocab_size)
+        final_output=self.final_layer(dec_output)
+
+        return final_output,attention_weights
 
 
         
-            
-    
-
-
-
 
 if __name__=="__main__":
     # pos_encoding = positional_encoding(50, 512)
@@ -227,49 +302,68 @@ if __name__=="__main__":
 
     # padding_mask(seq=[[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]])
 
-    def print_out(q, k, v):
-        temp_out, temp_attn = scaled_dot_product_attention(q, k, v, None)
-        print ('Attention weights are:')
-        print (temp_attn)
-        print ('Output is:')
-        print (temp_out)
+    # def print_out(q, k, v):
+    #     temp_out, temp_attn = scaled_dot_product_attention(q, k, v, None)
+    #     print ('Attention weights are:')
+    #     print (temp_attn)
+    #     print ('Output is:')
+    #     print (temp_out)
 
-    np.set_printoptions(suppress=True)
+    # np.set_printoptions(suppress=True)
 
-    temp_k = tf.constant([[10,0,0],[0,10,0],[0,0,10],[0,0,10]], dtype=tf.float32)  # (4, 3)
-    print("temp_k.shape:",temp_k.shape)
+    # temp_k = tf.constant([[10,0,0],[0,10,0],[0,0,10],[0,0,10]], dtype=tf.float32)  # (4, 3)
+    # print("temp_k.shape:",temp_k.shape)
 
-    temp_v = tf.constant([[ 1,0],[ 10,0],[ 100,5],[1000,6]], dtype=tf.float32)  # (4, 2)
+    # temp_v = tf.constant([[ 1,0],[ 10,0],[ 100,5],[1000,6]], dtype=tf.float32)  # (4, 2)
 
-    # This `query` aligns with the second `key`,so the second `value` is returned.
-    temp_q = tf.constant([[0, 10, 0]], dtype=tf.float32)  # (1, 3)
-    print_out(temp_q, temp_k, temp_v)
+    # # This `query` aligns with the second `key`,so the second `value` is returned.
+    # temp_q = tf.constant([[0, 10, 0]], dtype=tf.float32)  # (1, 3)
+    # print_out(temp_q, temp_k, temp_v)
 
-    # This query aligns with a repeated key (third and fourth), so all associated values get averaged.
-    temp_q = tf.constant([[0, 0, 10]], dtype=tf.float32)  # (1, 3)
-    print_out(temp_q, temp_k, temp_v)
+    # # This query aligns with a repeated key (third and fourth), so all associated values get averaged.
+    # temp_q = tf.constant([[0, 0, 10]], dtype=tf.float32)  # (1, 3)
+    # print_out(temp_q, temp_k, temp_v)
 
-    temp_mha = MultiHeadAttention(d_model=512, num_heads=8)
-    y = tf.random.uniform((1, 60, 512))  # (batch_size, encoder_sequence, d_model)
-    out, attn = temp_mha(q=y, k=y, v=y, mask=None)
-    print("out.shape:",out.shape)
-    print("attn.shape:",attn.shape)
+    # temp_mha = MultiHeadAttention(d_model=512, num_heads=8)
+    # y = tf.random.uniform((1, 60, 512))  # (batch_size, encoder_sequence, d_model)
+    # out, attn = temp_mha(q=y, k=y, v=y, mask=None)
+    # print("out.shape:",out.shape)
+    # print("attn.shape:",attn.shape)
 
-    sample_ffn = FFN(2048, 512)
-    print("ffn.shape:",sample_ffn(tf.random.uniform((64, 50, 512))).shape)
+    # sample_ffn = FFN(2048, 512)
+    # print("ffn.shape:",sample_ffn(tf.random.uniform((64, 50, 512))).shape)
     
 
-    sample_encoder_block = TransformerEncoderBlock(512, 8, 2048)
-    sample_encoder_layer_output = sample_encoder_block(tf.random.uniform((64, 43, 512)), None, False)
-    print("transformer block output shape:",sample_encoder_layer_output.shape)
+    # sample_encoder_block = TransformerEncoderBlock(512, 8, 2048)
+    # sample_encoder_layer_output = sample_encoder_block(tf.random.uniform((64, 43, 512)), None, False)
+    # print("transformer block output shape:",sample_encoder_layer_output.shape)
 
-    sample_decoder_layer = TransformerDecoderBlock(512, 8, 2048)
+    # sample_decoder_layer = TransformerDecoderBlock(512, 8, 2048)
     
-    sample_decoder_layer_output, _, _ = sample_decoder_layer(tf.random.uniform((64, 50, 512)), sample_encoder_layer_output, None, None,False)
+    # sample_decoder_layer_output, _, _ = sample_decoder_layer(tf.random.uniform((64, 50, 512)), sample_encoder_layer_output, None, None,False)
 
-    print(sample_decoder_layer_output.shape)  # (batch_size, target_seq_len, d_model)
+    # print(sample_decoder_layer_output.shape)  # (batch_size, target_seq_len, d_model)
 
+    sample_encoder = TransformerEncoder(num_blocks=2, d_model=512, num_heads=8, dff=2048, vocab_size=8500)
+
+    sample_encoder_output = sample_encoder(tf.random.uniform((64, 62)), training=False, mask=None)
+
+    print (sample_encoder_output.shape)  # (batch_size, input_seq_len, d_model)
+
+
+    sample_decoder = TransformerDecoder(num_blocks=2, d_model=512, num_heads=8, dff=2048, vocab_size=8000)
+
+    output, attn = sample_decoder(tf.random.uniform((64, 26)), enc_output=sample_encoder_output, look_ahead_mask=None, padding_mask=None,training=False)
+
+    print(output.shape, attn['decoder_layer2_block2'].shape)
  
 
 
-    
+    sample_transformer = Transformer(num_blocks=2, d_model=512, num_heads=8, dff=2048, input_vocab_size=8500, target_vocab_size=8000)
+
+    temp_input = tf.random.uniform((64, 62))
+    temp_target = tf.random.uniform((64, 26))
+
+    fn_out, _ = sample_transformer(temp_input, temp_target, enc_padding_mask=None, look_ahead_mask=None,dec_padding_mask=None,training=False)
+
+    print(fn_out.shape)  # (batch_size, tar_seq_len, target_vocab_size)
