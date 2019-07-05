@@ -10,12 +10,13 @@ from transformer import *
 from dataset import process
 
 
+
 #load subword and restore tokenizer
 tokenizer_en=tfds.features.text.SubwordTextEncoder.load_from_file(filename_prefix="../index_files/en")
 tokenizer_pt=tfds.features.text.SubwordTextEncoder.load_from_file(filename_prefix="../index_files/pt")
 
 
-BUFFER_SIZE = 20000
+BUFFER_SIZE = 40000
 BATCH_SIZE = 64
 EPOCHS=30
 
@@ -25,7 +26,7 @@ TARGET_VOCAB_SIZE=tokenizer_en.vocab_size+2
 print("tokenizer_en.size:",TARGET_VOCAB_SIZE)
 print("tokenizer_pt.size:",SOURCE_VOCAB_SIZE)
 
-NUM_LAYERS=4
+NUM_LAYERS=5
 D_MODEL=128
 DFF=512
 NUM_HEADS=8
@@ -185,6 +186,39 @@ def evaluate(src_sentence,tansformer_obj):
     return tf.squeeze(output, axis=0), attention_weights
 
 
+def plot_attention_weights(attention, sentence, result, layer):
+  fig = plt.figure(figsize=(16, 8))
+  
+  sentence = tokenizer_pt.encode(sentence)
+  
+  attention = tf.squeeze(attention[layer], axis=0)
+  
+  for head in range(attention.shape[0]):
+    ax = fig.add_subplot(2, 4, head+1)
+    
+    # plot the attention weights
+    ax.matshow(attention[head][:-1, :], cmap='viridis')
+
+    fontdict = {'fontsize': 10}
+    
+    ax.set_xticks(range(len(sentence)+2))
+    ax.set_yticks(range(len(result)))
+    
+    ax.set_ylim(len(result)-1.5, -0.5)
+        
+    ax.set_xticklabels(
+        ['<start>']+[tokenizer_pt.decode([i]) for i in sentence]+['<end>'], 
+        fontdict=fontdict, rotation=90)
+    
+    ax.set_yticklabels([tokenizer_en.decode([i]) for i in result 
+                        if i < tokenizer_en.vocab_size], 
+                       fontdict=fontdict)
+    
+    ax.set_xlabel('Head {}'.format(head+1))
+  
+  plt.tight_layout()
+  plt.show()
+
 
 
 
@@ -205,6 +239,14 @@ def translate(src_sentence):
     print('Input: {}'.format(src_sentence))
     print('Predicted translation: {}'.format(predicted_sentence))
 
+    #draw_multihead_attention(attention_weights=attention_weights,src_seq=src_sentence,tar_seq=predicted_sentence,layer='decoder_layer4_block2')
+    plot_attention_weights(attention_weights,src_sentence,result,'decoder_layer4_block2')
+
+
+    
+
+    
+
 
    
 
@@ -216,8 +258,8 @@ def translate(src_sentence):
     
 if __name__=="__main__":
     print("start")
-    #train()
-    translate("este é um problema que temos que resolver.")
+    train()
+    # translate("este é um problema que temos que resolver.")
     # temp_learning_rate_schedule = CustomSchedule(128)
     # plt.plot(temp_learning_rate_schedule(tf.range(40000, dtype=tf.float32)))
     # plt.ylabel("Learning Rate")
