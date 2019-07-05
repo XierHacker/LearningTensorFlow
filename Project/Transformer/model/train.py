@@ -134,7 +134,7 @@ def train():
             #添加标量到summary
             with file_writer.as_default():
                 tf.summary.scalar(name="loss",data=loss,step=iter_num)
-                tf.summary.scalar(name="learning_rate",data=learning_rate(tf.constant(iter,dtype=tf.float32)),step=iter_num)
+                tf.summary.scalar(name="learning_rate",data=learning_rate(tf.constant(iter_num,dtype=tf.float32)),step=iter_num)
                 file_writer.flush()
             print("loss:",loss.numpy())
 
@@ -143,13 +143,84 @@ def train():
         ckpt_save_path = ckpt_manager.save()
         print ('Saving checkpoint for epoch {} at {}'.format(epoch+1,ckpt_save_path))
 
+
+def evaluate(src_sentence,tansformer_obj):
+    start_token = [tokenizer_pt.vocab_size]
+    end_token = [tokenizer_pt.vocab_size + 1]
+
+    # inp sentence is portuguese, hence adding the start and end token
+    src_sentence = start_token + tokenizer_pt.encode(src_sentence) + end_token
+    print("src_sentence:",src_sentence)
+    encoder_input = tf.expand_dims(src_sentence, 0)
+    print("encoder_inputs:\n",encoder_input)
+    
+
+    # as the target is english, the first word to the transformer should be the english start token.
+    decoder_input = [tokenizer_en.vocab_size]
+    print("decoder_input:\n",decoder_input)
+    output = tf.expand_dims(decoder_input, 0)
+    print("output:\n",output)
+
+    for i in range(40):
+        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(encoder_input, output)
+        # print("enc_padding_mask:\n",enc_padding_mask)
+        # print("combine_mask:\n",combined_mask)
+        # print("dec_padding_mask:\n",dec_padding_mask)
+
+        # predictions.shape == (batch_size, seq_len, vocab_size)
+        predictions,attention_weights=tansformer_obj(encoder_input,output,enc_padding_mask,combined_mask,dec_padding_mask,False)
+
+        # select the last word from the seq_len dimension
+        predictions = predictions[: ,-1:, :]  # (batch_size, 1, vocab_size)
+
+        predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
+    
+        # return the result if the predicted_id is equal to the end token
+        if tf.equal(predicted_id, tokenizer_en.vocab_size+1):
+            return tf.squeeze(output, axis=0), attention_weights
+        
+        # concatentate the predicted_id to the output which is given to the decoder as its input.
+        output = tf.concat([output, predicted_id], axis=-1)
+
+    return tf.squeeze(output, axis=0), attention_weights
+
+
+
+
+
+
+def translate(src_sentence):
+    #restore transformer from checkpoints
+    #models
+    transformer_obj=Transformer(NUM_LAYERS,D_MODEL,NUM_HEADS,DFF,SOURCE_VOCAB_SIZE,TARGET_VOCAB_SIZE,DROPOUT_RATE)
+    #optimizer=tf.keras.optimizers.Adam(learning_rate,beta_1=0.9, beta_2=0.98, epsilon=1e-9)
+    ckpt = tf.train.Checkpoint(transformer_obj=transformer_obj)
+    ckpt.restore(save_path="./checkpoints/train/ckpt-28")
+
+
+    result, attention_weights = evaluate(src_sentence,transformer_obj)
+
+    predicted_sentence = tokenizer_en.decode([i for i in result if i < tokenizer_en.vocab_size])  
+
+    print('Input: {}'.format(src_sentence))
+    print('Predicted translation: {}'.format(predicted_sentence))
+
+
+   
+
+   
+    
+
+
         
     
 if __name__=="__main__":
     print("start")
-    train()
+    #train()
+    translate("este é um problema que temos que resolver.")
     # temp_learning_rate_schedule = CustomSchedule(128)
     # plt.plot(temp_learning_rate_schedule(tf.range(40000, dtype=tf.float32)))
     # plt.ylabel("Learning Rate")
     # plt.xlabel("Train Step")
     # plt.show()
+    # evaluate(src_sentence="este é um problema que temos que resolver.")
