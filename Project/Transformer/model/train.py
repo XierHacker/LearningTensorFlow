@@ -53,7 +53,7 @@ def create_look_ahead_mask(size):
 
 def create_masks(inp, tar):
   print("inp:\n",inp)
-  printt("tar:\n",tar)
+  print("tar:\n",tar)
   # Encoder padding mask
   enc_padding_mask = create_padding_mask(inp)
   print("enc_padding_mask:\n", enc_padding_mask)
