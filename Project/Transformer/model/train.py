@@ -52,17 +52,25 @@ def create_look_ahead_mask(size):
     return mask  # (seq_len, seq_len)
 
 def create_masks(inp, tar):
+  print("inp:\n",inp)
+  printt("tar:\n",tar)
   # Encoder padding mask
   enc_padding_mask = create_padding_mask(inp)
+  print("enc_padding_mask:\n", enc_padding_mask)
   
   # Used in the 2nd attention block in the decoder.
   # This padding mask is used to mask the encoder outputs.
   dec_padding_mask = create_padding_mask(inp)
+  print("dec_padding_mask:\n",dec_padding_mask)
   
   # Used in the 1st attention block in the decoder. 
   # It is used to pad and mask future tokens in the input received by the decoder.
   look_ahead_mask = create_look_ahead_mask(tf.shape(tar)[1])
+  print("look_ahead_mask:\n",look_ahead_mask)
   dec_target_padding_mask = create_padding_mask(tar)
+  print("dec_target_padding_mask:\n",dec_target_padding_mask)
+
+
   combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
   
   return enc_padding_mask, combined_mask, dec_padding_mask
