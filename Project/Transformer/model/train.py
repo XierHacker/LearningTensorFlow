@@ -72,6 +72,7 @@ def create_masks(inp, tar):
 
 
   combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
+  print("combined_mask:\n",combined_mask)
   
   return enc_padding_mask, combined_mask, dec_padding_mask
 
