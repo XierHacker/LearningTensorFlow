@@ -65,6 +65,8 @@ def train():
             # Teacher forcing - feeding the target as the next input
             for t in range(1, targ.shape[1]):
                 predictions, dec_hidden, _ = decoder(dec_input, dec_hidden, enc_output)
+                print("predictions:\n",predictions)
+
                 loss += loss_function(targ[:, t], predictions)
                 # using teacher forcing
                 dec_input = tf.expand_dims(targ[:, t], 1)
