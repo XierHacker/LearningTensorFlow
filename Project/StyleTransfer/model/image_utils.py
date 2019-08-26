@@ -1,18 +1,8 @@
 import os
 import time
 import numpy as np 
-import matplotlib.pyplot as plt 
-import tensorflow as tf 
-
-content_path = tf.keras.utils.get_file(
-  'turtle.jpg',
-  'https://storage.googleapis.com/download.tensorflow.org/example_images/Green_Sea_Turtle_grazing_seagrass.jpg'
-)
-style_path = tf.keras.utils.get_file(
-  'kandinsky.jpg',
-  'https://storage.googleapis.com/download.tensorflow.org/example_images/Vassily_Kandinsky%2C_1913_-_Composition_7.jpg'
-)
-
+import matplotlib.pyplot as plt
+import tensorflow as tf
 
 def load_img(path_to_img):
   max_dim = 512
@@ -38,13 +28,8 @@ def imshow(image, title=None):
   if title:
     plt.title(title)
 
-content_image = load_img(content_path)
-style_image = load_img(style_path)
 
-plt.subplot(1, 2, 1)
-imshow(content_image, 'Content Image')
 
-plt.subplot(1, 2, 2)
-imshow(style_image, 'Style Image')
 
-plt.show()
+
+
