@@ -27,6 +27,3 @@ style_layers = ['block1_conv1',
 num_content_layers = len(content_layers)
 num_style_layers = len(style_layers)
 
-
-if __name__=="__main__":
-  pass
