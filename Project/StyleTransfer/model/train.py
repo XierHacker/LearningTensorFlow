@@ -43,7 +43,7 @@ def train(content_image,style_image):
     loss = style_loss + content_loss
     return loss
 
-  for i in range(100):
+  for i in range(1000):
     start_time=time.time()
     print("Step:",i)
     with tf.GradientTape() as tape:
@@ -58,7 +58,7 @@ def train(content_image,style_image):
 
 
   #save result
-  img.imsave("./result.png",image[0])
+  img.imsave("./result.png",image.numpy()[0])
 
   #plt.imshow(image.read_value()[0])
   #plt.show()
@@ -70,8 +70,8 @@ def train(content_image,style_image):
 
 
 if __name__=="__main__":
-  content_image = image_utils.load_img(parameter.content_path)
-  style_image = image_utils.load_img(parameter.style_path)
+  content_image = image_utils.load_img("./6.jpeg")
+  style_image = image_utils.load_img("./4.jpeg")
   train(content_image=content_image,style_image=style_image)
   #
   # plt.subplot(1, 2, 1)
