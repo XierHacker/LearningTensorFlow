@@ -33,5 +33,5 @@ def extract_img_features(img_names,extractor):
     #     np.save(path_of_feature, bf.numpy())
 
 if __name__=="__main__":
-    train_captions, train_img_names = get_image_annotation()
+    train_captions, train_img_names = preprocess.get_image_annotation()
     extract_img_features(img_names=train_img_names,extractor=model.image_features_extract_model)
