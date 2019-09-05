@@ -31,5 +31,5 @@ for annot in annotations['annotations']:
     all_img_names.append(full_coco_image_path)
     all_captions.append(caption)
 
-print("all_captions:\n",all_captions)
-print("all_img_names\n",all_img_names)
+print("all_captions:\n",all_captions[0],len(all_captions))
+print("all_img_names\n",all_img_names[0],len(all_img_names))
