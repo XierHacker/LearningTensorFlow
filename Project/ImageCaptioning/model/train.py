@@ -13,8 +13,25 @@ import model
 import preprocess
 
 
-inceptionv3 = tf.keras.applications.InceptionV3(include_top=False,weights='imagenet')
-new_input = inceptionv3.input
-hidden_layer = inceptionv3.layers[-1].output
+def extract_img_features(img_names,extractor):
+    # Get unique images
+    encode_train = sorted(set(img_names))
+    print("encode_train:\n",encode_train)
 
-image_features_extract_model = tf.keras.Model(new_input, hidden_layer)
+    # # Feel free to change batch_size according to your system configuration
+    # image_dataset = tf.data.Dataset.from_tensor_slices(encode_train)
+    # image_dataset = image_dataset.map(
+    #   load_image, num_parallel_calls=tf.data.experimental.AUTOTUNE).batch(16)
+    #
+    # for img, path in image_dataset:
+    #   batch_features = image_features_extract_model(img)
+    #   batch_features = tf.reshape(batch_features,
+    #                               (batch_features.shape[0], -1, batch_features.shape[3]))
+    #
+    #   for bf, p in zip(batch_features, path):
+    #     path_of_feature = p.numpy().decode("utf-8")
+    #     np.save(path_of_feature, bf.numpy())
+
+if __name__=="__main__":
+    train_captions, train_img_names = get_image_annotation()
+    extract_img_features(img_names=train_img_names,extractor=model.image_features_extract_model)
