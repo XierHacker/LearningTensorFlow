@@ -7,8 +7,8 @@ from glob import glob
 from PIL import Image
 import pickle
 from sklearn.utils import shuffle
+import tensorflow as tf
 
-import model
 
 annotation_file="/data3/xiekun/DataSets/coco/annotations/captions_train2014.json"
 image_dir="/data3/xiekun/DataSets/coco/train2014/"
@@ -54,7 +54,7 @@ def get_image_annotation():
 
 if __name__=="__main__":
     train_captions, train_img_names=get_image_annotation()
-    
+
 
 
 
